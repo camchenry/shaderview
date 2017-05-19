@@ -1,5 +1,6 @@
 function love.load()
-
+    shaders.color:send('window_width', love.graphics.getWidth())
+    shaders.color:send('window_height', love.graphics.getHeight())
 end
 
 function love.update(dt)
