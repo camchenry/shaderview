@@ -26,8 +26,12 @@ function hotswap.update(dt)
         for filepath, hooks in pairs(hotswap.hooks) do
             local last_modified = love.filesystem.getLastModified(filepath)
 
+            if not hotswap.last_modified[filepath] then
+                hotswap.last_modified[filepath] = love.filesystem.getLastModified(filepath)
+            end
+
             -- Has the file changed?
-            if last_modified == nil or last_modified > hotswap.last_modified[filepath] then
+            if last_modified and last_modified > hotswap.last_modified[filepath] then
                 print('File changed: ' .. filepath)
                 for i, fn in ipairs(hooks) do
                     fn(filepath)

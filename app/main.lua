@@ -1,10 +1,11 @@
 function love.load()
     shaders.color:send('window_width', love.graphics.getWidth())
     shaders.color:send('window_height', love.graphics.getHeight())
+    shaders.color:send('vars', 1, 1)
 end
 
 function love.update(dt)
-
+    shaders.color:send('vars', math.sin(love.timer.getTime()), math.cos(love.timer.getTime()))
 end
 
 function love.draw()
