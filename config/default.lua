@@ -3,5 +3,5 @@
 return {
     shader_directory = 'app/shaders',
 
-    hotswap_interval = 0.2,
+    file_hotswap_interval = 0.2,
 }

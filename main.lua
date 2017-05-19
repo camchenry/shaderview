@@ -1,7 +1,4 @@
-local config_default = require 'config.default'
-local config_user    = require 'config.user'
-
-local config = {}
+config = {}
 
 -- This will modify the config table directly
 local function mix_into_config(t)
@@ -14,11 +11,20 @@ local function mix_into_config(t)
     end
 end
 
-mix_into_config(config_default)
-mix_into_config(config_user)
+local function config_load(file)
+    mix_into_config(love.filesystem.load(file)())
+end
+
+local function config_reload()
+    config = {}
+    config_load('config/default.lua')
+    config_load('config/user.lua')
+    print('Config reloaded')
+end
+
+config_reload()
 
 local file_last_modified = {}
-local file_hotswap_interval = config.hotswap_interval
 local file_hotswap_timer = 0
 local file_hotswap_hooks = {}
 local function file_hook_on_change(path, fn)
@@ -78,6 +84,9 @@ function love.load()
         end)
     end
 
+    file_hook_on_change('config/default.lua', config_reload)
+    file_hook_on_change('config/user.lua', config_reload)
+
     app_handlers['load']()
 end
 
@@ -86,14 +95,14 @@ function love.update(dt)
 
     file_hotswap_timer = file_hotswap_timer + dt
 
-    if file_hotswap_timer > file_hotswap_interval then
-        file_hotswap_timer = file_hotswap_timer - file_hotswap_interval
+    if file_hotswap_timer > config.file_hotswap_interval then
+        file_hotswap_timer = file_hotswap_timer - config.file_hotswap_interval
 
         -- Scan for file changes
         for filepath, hooks in pairs(file_hotswap_hooks) do
             local last_modified = love.filesystem.getLastModified(filepath)
 
-            print(last_modified, file_last_modified[filepath])
+            print(config.file_hotswap_interval)
             -- Has the file changed?
             if last_modified > file_last_modified[filepath] then
                 print('File changed: ' .. filepath)
