@@ -1,15 +1,18 @@
+file = require 'src.file'
+hotswap = require 'src.hotswap'
 require 'src.config'
-require 'src.file'
 
 config = {}
 config_reload()
 
--- @Global
 shaders = {}
 
 local function shader_load(path)
-    local basename = file_get_basename(path)
-    local filename = file_remove_extension(basename)
+    local basename = file.get_basename(path)
+    local filename = file.remove_extension(basename)
+    if not love.filesystem.isFile(path) then
+        error('Path is not a file: "' .. path .. '"')
+    end
     shaders[filename] = love.graphics.newShader(path)
 end
 
@@ -36,13 +39,13 @@ function love.load()
     for i, file in ipairs(files) do
         local path = config.shader_directory .. '/' .. file
         shader_load(path)
-        file_hook_on_change(path, function(path)
+        hotswap.hook(path, function(path)
             shader_load(path)
         end)
     end
 
-    file_hook_on_change('config/default.lua', config_reload)
-    file_hook_on_change('config/user.lua', config_reload)
+    hotswap.hook('config/default.lua', config_reload)
+    hotswap.hook('config/user.lua', config_reload)
 
     app_handlers['load']()
 end
@@ -50,7 +53,7 @@ end
 function love.update(dt)
     app_handlers['update'](dt)
 
-    file_hook_check_changes(dt)
+    hotswap.update(dt)
 end
 
 function love.draw()
