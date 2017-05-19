@@ -1,51 +1,8 @@
+require 'src.config'
+require 'src.file'
+
 config = {}
-
--- This will modify the config table directly
-local function mix_into_config(t)
-    for k, v in pairs(t) do
-        if type(v) == "table" then
-            mix_into_config(v)
-        else
-            config[k] = v
-        end
-    end
-end
-
-local function config_load(file)
-    mix_into_config(love.filesystem.load(file)())
-end
-
-local function config_reload()
-    config = {}
-    config_load('config/default.lua')
-    config_load('config/user.lua')
-    print('Config reloaded')
-end
-
 config_reload()
-
-local file_last_modified = {}
-local file_hotswap_timer = 0
-local file_hotswap_hooks = {}
-local function file_hook_on_change(path, fn)
-    if not file_hotswap_hooks[path] then
-        file_hotswap_hooks[path] = {}
-    end
-
-    table.insert(file_hotswap_hooks[path], fn)
-
-    if not file_last_modified[path] then
-        file_last_modified[path] = love.filesystem.getLastModified(path)
-    end
-end
-
-local function file_get_basename(path)
-    return path:gsub("(.*/)(.*)", "%2")
-end
-
-local function file_remove_extension(filename)
-    return (filename:gsub('%..-$', ''))
-end
 
 -- @Global
 shaders = {}
@@ -79,7 +36,7 @@ function love.load()
     for i, file in ipairs(files) do
         local path = config.shader_directory .. '/' .. file
         shader_load(path)
-        file_hook_on_change(path, function()
+        file_hook_on_change(path, function(path)
             shader_load(path)
         end)
     end
@@ -93,27 +50,7 @@ end
 function love.update(dt)
     app_handlers['update'](dt)
 
-    file_hotswap_timer = file_hotswap_timer + dt
-
-    if file_hotswap_timer > config.file_hotswap_interval then
-        file_hotswap_timer = file_hotswap_timer - config.file_hotswap_interval
-
-        -- Scan for file changes
-        for filepath, hooks in pairs(file_hotswap_hooks) do
-            local last_modified = love.filesystem.getLastModified(filepath)
-
-            print(config.file_hotswap_interval)
-            -- Has the file changed?
-            if last_modified > file_last_modified[filepath] then
-                print('File changed: ' .. filepath)
-                for i, fn in ipairs(hooks) do
-                    fn(filepath)
-                end
-            end
-
-            file_last_modified[filepath] = last_modified
-        end
-    end
+    file_hook_check_changes(dt)
 end
 
 function love.draw()
