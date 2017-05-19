@@ -110,15 +110,24 @@ function game:draw()
     love.graphics.draw(self.canvas, 0, 0)
 
     if error_occurred then
-        love.graphics.setColor(0, 0, 0, 127)
+        love.graphics.setColor(0, 0, 0, 160)
         love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
         love.graphics.setColor(255, 255, 255)
-        love.graphics.print('Error', 70, 70)
+        love.graphics.setFont(Fonts.bold[30])
+        local x = 70
+        local y = 70
+        love.graphics.print('Error', x, y)
         local line_height = love.graphics.getFont():getHeight()
-        local i = 2
+        y = y + line_height
+        y = y + 30
+        love.graphics.setFont(Fonts.monospace[18])
+        local line_height = love.graphics.getFont():getHeight()
         for k, v in pairs(error_log) do
-            love.graphics.print(k .. ' ' .. v, 70, 70 + i * line_height)
-            i = i + 1
+            y = y + line_height
+            love.graphics.setColor(0, 0, 0)
+            love.graphics.print(k .. ' ' .. v, x + 1, y + 1)
+            love.graphics.setColor(255, 255, 255)
+            love.graphics.print(k .. ' ' .. v, x, y)
         end
     end
 end
