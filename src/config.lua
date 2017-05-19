@@ -1,21 +1,22 @@
--- This will modify the config table directly
-function config_mixin(t)
+local config = {
+    data = {}
+}
+
+function config:mixin(t)
     for k, v in pairs(t) do
         if type(v) == "table" then
-            mix_into_config(v)
+            self:mixin(v)
         else
-            config[k] = v
+            self.data[k] = v
         end
     end
 end
 
-function config_load(file)
-    config_mixin(love.filesystem.load(file)())
+function config:load(file)
+    if not love.filesystem.exists(file) then
+        error('Config file "' .. file .. '" does not exist!')
+    end
+    self:mixin(love.filesystem.load(file)())
 end
 
-function config_reload()
-    config = {}
-    config_load('config/default.lua')
-    config_load('config/user.lua')
-    print('Config reloaded')
-end
+return config

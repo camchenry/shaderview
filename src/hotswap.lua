@@ -1,44 +1,49 @@
 local hotswap = {
     timer = 0,
+    interval = 0,
     hooks = {},
     last_modified = {},
 }
 
-function hotswap.hook(path, fn)
-    if not hotswap.hooks[path] then
-        hotswap.hooks[path] = {}
+function hotswap:load_config_data(config)
+    self.interval = config.file_hotswap_interval
+end
+
+function hotswap:hook(filepath, fn)
+    if not self.hooks[filepath] then
+        self.hooks[filepath] = {}
     end
 
-    table.insert(hotswap.hooks[path], fn)
+    table.insert(self.hooks[filepath], fn)
 
-    if not hotswap.last_modified[path] then
-        hotswap.last_modified[path] = love.filesystem.getLastModified(path)
+    if not self.last_modified[filepath] then
+        self.last_modified[filepath] = love.filesystem.getLastModified(filepath)
     end
 end
 
-function hotswap.update(dt)
-    hotswap.timer = hotswap.timer + dt
+function hotswap:update(dt)
+    self.timer = self.timer + dt
 
-    if hotswap.timer > config.file_hotswap_interval then
-        hotswap.timer = hotswap.timer - config.file_hotswap_interval
+    if self.timer > self.interval then
+        self.timer = self.timer - self.interval
 
         -- Scan for file changes
-        for filepath, hooks in pairs(hotswap.hooks) do
+        for filepath, hooks in pairs(self.hooks) do
             local last_modified = love.filesystem.getLastModified(filepath)
 
-            if not hotswap.last_modified[filepath] then
-                hotswap.last_modified[filepath] = love.filesystem.getLastModified(filepath)
+            if not self.last_modified[filepath] then
+                self.last_modified[filepath] = love.filesystem.getLastModified(filepath)
             end
 
             -- Has the file changed?
-            if last_modified and last_modified > hotswap.last_modified[filepath] then
+            if last_modified and last_modified > self.last_modified[filepath] then
                 print('File changed: ' .. filepath)
                 for i, fn in ipairs(hooks) do
                     fn(filepath)
                 end
             end
 
-            hotswap.last_modified[filepath] = last_modified
+            self.last_modified[filepath] = last_modified
         end
     end
 end
