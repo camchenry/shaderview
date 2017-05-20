@@ -14,13 +14,36 @@ local app = require 'app.main'
 local error_occurred = false
 local error_log = {}
 
+local function errhand(...)
+    error_occurred = true
+    error_log = {...}
+    print(...)
+end
+
+local function safecall(fn, callbacks)
+    local ok, result = xpcall(fn, errhand)
+
+    if not callbacks then
+        callbacks = {}
+    end
+
+    if ok then
+        error_occurred = false
+        if callbacks.success then
+            callbacks.success(result)
+        end
+        return result
+    else
+        if callbacks.failure then
+            callbacks.failure(result)
+        end
+        return nil
+    end
+end
+
 local function shader_load(path)
     local basename = file_get_basename(path)
     local filename = file_remove_extension(basename)
-    local function errhand(...)
-        error_occurred = true
-        error_log = {...}
-    end
     local ok, shader = xpcall(function()
         return love.graphics.newShader(path)
     end, errhand)
@@ -33,13 +56,20 @@ local function shader_load(path)
 
         local old_send = getmetatable(shader).send
         getmetatable(shader).send = function(...)
-            old_send(...)
             local args = {...}
-            local shader = args[1]
-            table.remove(args, 1)
-            local variable = args[1]
-            table.remove(args, 1)
-            shader_uniforms[filename][variable] = args
+            local ok, result = xpcall(function()
+                old_send(unpack(args))
+            end, errhand)
+
+            if ok then
+                error_occurred = false
+
+                local shader = args[1]
+                table.remove(args, 1)
+                local variable = args[1]
+                table.remove(args, 1)
+                shader_uniforms[filename][variable] = args
+            end
         end
 
         for k, v in pairs(shader_uniforms[filename]) do
@@ -78,6 +108,14 @@ function game:init()
 
     hotswap:hook('config/default.lua', config_reload)
     hotswap:hook('config/user.lua', config_reload)
+
+    hotswap:hook('app/main.lua', function(path)
+        package.loaded['app.main'] = nil
+
+        safecall(function()
+            app = require 'app.main'
+        end)
+    end)
 
     app:load()
 end
