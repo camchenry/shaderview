@@ -6,7 +6,7 @@ function app:load()
 end
 
 function app:update(dt)
-
+    shaders.color:send('t', love.timer.getTime())
 end
 
 function app:draw()
