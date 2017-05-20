@@ -153,6 +153,7 @@ local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
 end
 
 function game:draw()
+    love.graphics.push("all")
     love.graphics.setCanvas(self.canvas)
     love.graphics.setBlendMode("alpha", "premultiplied")
     error_region = "app_draw"
@@ -161,6 +162,7 @@ function game:draw()
     end, errhand)
     love.graphics.setBlendMode("alpha", "alphamultiply")
     love.graphics.setCanvas()
+    love.graphics.pop()
 
     love.graphics.draw(self.canvas, 0, 0)
 
