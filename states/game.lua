@@ -9,46 +9,31 @@ end
 local config = require 'src.config'
 local hotswap = require 'src.hotswap'
 
-local app = require 'app.main'
-
 local error_occurred = false
-local error_log = {}
+local error_region = "main"
+local errors = {}
 
 local function errhand(...)
-    error_occurred = true
-    error_log = {...}
+    errors[error_region] = {...}
     print(...)
 end
 
-local function safecall(fn, callbacks)
-    local ok, result = xpcall(fn, errhand)
-
-    if not callbacks then
-        callbacks = {}
-    end
-
-    if ok then
-        error_occurred = false
-        if callbacks.success then
-            callbacks.success(result)
-        end
-        return result
-    else
-        if callbacks.failure then
-            callbacks.failure(result)
-        end
-        return nil
-    end
+local old_xpcall = xpcall
+xpcall = function(...)
+    errors[error_region] = nil
+    return old_xpcall(...)
 end
 
 local function shader_load(path)
     local basename = file_get_basename(path)
     local filename = file_remove_extension(basename)
+
+    error_region = "shader_load"
     local ok, shader = xpcall(function()
         return love.graphics.newShader(path)
     end, errhand)
+
     if ok then
-        error_occurred = false
         shaders[filename] = shader
         if not shader_uniforms[filename] then
             shader_uniforms[filename] = {}
@@ -57,13 +42,15 @@ local function shader_load(path)
         local old_send = getmetatable(shader).send
         getmetatable(shader).send = function(...)
             local args = {...}
+
+            local old_err_region = error_region
+            error_region = "shader_send"
             local ok, result = xpcall(function()
                 old_send(unpack(args))
             end, errhand)
+            error_region = old_err_region
 
             if ok then
-                error_occurred = false
-
                 local shader = args[1]
                 table.remove(args, 1)
                 local variable = args[1]
@@ -91,6 +78,18 @@ function game:init()
 
     config_reload()
 
+    local function app_reload()
+        package.loaded['app.main'] = nil
+        error_region = "app_load"
+        xpcall(function()
+            app = require 'app.main'
+
+            if app then
+                app:load()
+            end
+        end, errhand)
+    end
+
     if not love.filesystem.exists(config.data.shader_directory) then
         error('Shader directory "' .. config.data.shader_directory .. '" does not exist.')
     end
@@ -109,15 +108,9 @@ function game:init()
     hotswap:hook('config/default.lua', config_reload)
     hotswap:hook('config/user.lua', config_reload)
 
-    hotswap:hook('app/main.lua', function(path)
-        package.loaded['app.main'] = nil
+    app_reload()
 
-        safecall(function()
-            app = require 'app.main'
-        end)
-    end)
-
-    app:load()
+    hotswap:hook('app/main.lua', app_reload)
 end
 
 function game:enter()
@@ -125,9 +118,22 @@ function game:enter()
 end
 
 function game:update(dt)
-    app:update(dt)
+    error_region = "main"
+
+    error_region = "app_update"
+    xpcall(function()
+        app:update(dt)
+    end, errhand)
 
     hotswap:update(dt)
+
+    error_occurred = false
+    for region, err in pairs(errors) do
+        if err then
+            error_occurred = true
+            break
+        end
+    end
 end
 
 function game:keypressed(key, code)
@@ -138,10 +144,21 @@ function game:mousepressed(x, y, mbutton)
 
 end
 
+local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
+    local b = 1
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.print(text, x + b, y + b, sx, sy, ox, oy, skx, sky)
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.print(text, x, y, sx, sy, ox, oy, skx, sky)
+end
+
 function game:draw()
     love.graphics.setCanvas(self.canvas)
     love.graphics.setBlendMode("alpha", "premultiplied")
-    app:draw()
+    error_region = "app_draw"
+    xpcall(function()
+        app:draw()
+    end, errhand)
     love.graphics.setBlendMode("alpha", "alphamultiply")
     love.graphics.setCanvas()
 
@@ -154,18 +171,31 @@ function game:draw()
         love.graphics.setFont(Fonts.bold[30])
         local x = 70
         local y = 70
-        love.graphics.print('Error', x, y)
+        print_with_shadow('Error', x, y)
         local line_height = love.graphics.getFont():getHeight()
         y = y + line_height
-        y = y + 30
-        love.graphics.setFont(Fonts.monospace[18])
+        local baseFont = Fonts.monospace[18]
+        love.graphics.setFont(baseFont)
         local line_height = love.graphics.getFont():getHeight()
-        for k, v in pairs(error_log) do
-            y = y + line_height
-            love.graphics.setColor(0, 0, 0)
-            love.graphics.print(k .. ' ' .. v, x + 1, y + 1)
-            love.graphics.setColor(255, 255, 255)
-            love.graphics.print(k .. ' ' .. v, x, y)
+
+        for region, error_log in pairs(errors) do
+            if error_log then
+                -- @TODO include filename
+                y = y + 30
+                love.graphics.setFont(Fonts.bold[18])
+                print_with_shadow('Error during region: "'..region..'"', x, y)
+                y = y + love.graphics.getFont():getHeight()
+                love.graphics.setFont(baseFont)
+                for _, text in ipairs(error_log) do
+                    love.graphics.setColor(0, 0, 0)
+                    love.graphics.print(text, x + 1, y + 1)
+                    love.graphics.setColor(255, 255, 255)
+                    love.graphics.print(text, x, y)
+
+                    local _, lines = text:gsub('\n', '\n')
+                    y = y + line_height * (lines + 1)
+                end
+            end
         end
     end
 end
