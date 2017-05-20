@@ -39,7 +39,7 @@ CONFIG = {
             foreground      = {255, 255, 255, 225},
             shadow          = {0, 0, 0, 225}, 
             shadowOffset    = {x = 1, y = 1},
-            position        = {x = 8, y = 6},
+            position        = {x = 8, y = love.graphics.getHeight()-190},
 
             kilobytes = false,
         },
