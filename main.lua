@@ -12,7 +12,7 @@ Camera  = require 'libs.camera'
 Timer   = require 'libs.timer'
 xxhash  = require 'libs.xxhash'
 
-if DEBUG then
+if DEBUG and CONFIG.debug.lovebird.enabled then
     Lovebird = require 'libs.lovebird'
     Lovebird.port = CONFIG.debug.lovebird.port
     Lovebird.wrapprint = CONFIG.debug.lovebird.wrapPrint
@@ -48,7 +48,9 @@ function love.load()
         local loadTimeEnd = love.timer.getTime()
         local loadTime = (loadTimeEnd - loadTimeStart)
         print(("Loaded in %.3f seconds."):format(loadTime))
-        Lovebird.print(("Loaded in %.3f seconds."):format(loadTime))
+        if Lovebird then
+            Lovebird.print(("Loaded in %.3f seconds."):format(loadTime))
+        end
     end
 end
 

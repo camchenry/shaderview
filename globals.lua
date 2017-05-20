@@ -56,6 +56,7 @@ CONFIG = {
         },
 
         lovebird = {
+            enabled = false,
             port = 8000,
             wrapPrint = true,
             echoInput = true,
