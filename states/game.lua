@@ -155,6 +155,7 @@ end
 function game:draw()
     love.graphics.push("all")
     love.graphics.setCanvas(self.canvas)
+    love.graphics.clear(love.graphics.getBackgroundColor())
     love.graphics.setBlendMode("alpha", "premultiplied")
     error_region = "app_draw"
     xpcall(function()
