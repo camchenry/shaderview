@@ -104,8 +104,6 @@ function game:init()
         end)
     end
 
-    self.canvas = love.graphics.newCanvas()
-
     hotswap:hook('config/default.lua', config_reload)
     hotswap:hook('config/user.lua', config_reload)
 
@@ -170,16 +168,11 @@ end
 
 function game:draw()
     love.graphics.push("all")
-    love.graphics.setCanvas(self.canvas)
-    love.graphics.clear(love.graphics.getBackgroundColor())
     error_region = "app_draw"
     xpcall(function()
         app:draw()
     end, errhand)
-    love.graphics.setCanvas()
     love.graphics.pop()
-
-    love.graphics.draw(self.canvas, 0, 0)
 
     if error_occurred then
         love.graphics.setColor(0, 0, 0, 160)
