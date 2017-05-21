@@ -53,8 +53,6 @@ local function shader_load(path)
                 local variable = args[1]
                 table.remove(args, 1)
                 shader_uniforms[filename][variable] = args
-            else
-                print(...)
             end
         end
 
