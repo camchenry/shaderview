@@ -43,12 +43,9 @@ local function shader_load(path)
         getmetatable(shader).send = function(...)
             local args = {...}
 
-            local old_err_region = error_region
-            error_region = "shader_send"
             local ok, result = xpcall(function()
                 old_send(unpack(args))
             end, errhand)
-            error_region = old_err_region
 
             if ok then
                 local shader = args[1]
@@ -59,8 +56,12 @@ local function shader_load(path)
             end
         end
 
-        for k, v in pairs(shader_uniforms[filename]) do
-            shader:send(k, unpack(v))
+        for name, args in pairs(shader_uniforms[filename]) do
+            if shader:hasExternVariable(name) then
+                shader:send(name, unpack(args))
+            else
+                shader_uniforms[filename][name] = nil
+            end
         end
     end
 end
