@@ -1,16 +1,24 @@
 local app = {}
 
 function app:load()
-    shaders.color:send('window_width', love.graphics.getWidth())
-    shaders.color:send('window_height', love.graphics.getHeight())
+    self.timer = 0
+    self.frame = 0
+
+    local w, h = love.graphics.getDimensions()
+    shaders.shadertoy:send('iResolution', {w, h, 0})
 end
 
 function app:update(dt)
-    shaders.color:send('t', love.timer.getTime())
+    self.timer = self.timer + dt
+    self.frame = self.frame + 1
+
+    shaders.shadertoy:send('iGlobalTime', self.timer)
+    local mx, my = love.mouse.getPosition()
+    shaders.shadertoy:send('iMouse', {mx, my, 0, 0})
 end
 
 function app:draw()
-    love.graphics.setShader(shaders.color)
+    love.graphics.setShader(shaders.shadertoy)
     love.graphics.setColor(255, 255, 255)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
     love.graphics.setShader()

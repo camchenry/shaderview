@@ -33,7 +33,7 @@ local function shader_load(path)
         return love.graphics.newShader(path)
     end, errhand)
 
-    if ok then
+    if ok and shader then
         shaders[filename] = shader
         if not shader_uniforms[filename] then
             shader_uniforms[filename] = {}
@@ -53,11 +53,13 @@ local function shader_load(path)
                 local variable = args[1]
                 table.remove(args, 1)
                 shader_uniforms[filename][variable] = args
+            else
+                print(...)
             end
         end
 
         for name, args in pairs(shader_uniforms[filename]) do
-            if shader:hasExternVariable(name) then
+            if shader:getExternVariable(name) then
                 shader:send(name, unpack(args))
             else
                 shader_uniforms[filename][name] = nil
