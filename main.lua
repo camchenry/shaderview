@@ -58,6 +58,7 @@ function love.update(dt)
     if DEBUG and Lovebird then
         Lovebird.update()
     end
+    Timer.update(dt)
 end
 
 function love.draw()

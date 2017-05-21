@@ -112,6 +112,21 @@ function game:init()
     app_reload()
 
     hotswap:hook('app/main.lua', app_reload)
+
+    self.newShaderCheck = Timer.every(1, function()
+        local files = love.filesystem.getDirectoryItems(config.data.shader_directory)
+        for i, file in ipairs(files) do
+            local path = config.data.shader_directory .. '/' .. file
+            local basename = file_get_basename(path)
+            local filename = file_remove_extension(basename)
+            if not shaders[filename] then
+                shader_load(path)
+                hotswap:hook(path, function(path)
+                    shader_load(path)
+                end)
+            end
+        end
+    end)
 end
 
 function game:enter()
@@ -157,12 +172,10 @@ function game:draw()
     love.graphics.push("all")
     love.graphics.setCanvas(self.canvas)
     love.graphics.clear(love.graphics.getBackgroundColor())
-    love.graphics.setBlendMode("alpha", "premultiplied")
     error_region = "app_draw"
     xpcall(function()
         app:draw()
     end, errhand)
-    love.graphics.setBlendMode("alpha", "alphamultiply")
     love.graphics.setCanvas()
     love.graphics.pop()
 
