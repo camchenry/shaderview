@@ -50,9 +50,12 @@ local function shader_load(path)
             local args = {...}
 
             error_clear_error = false
+            local region = error_region
+            error_region = "shader_send"
             local ok, result = xpcall(function()
                 old_send(unpack(args))
             end, errhand)
+            error_region = region
             error_clear_error = true
 
             if ok then
@@ -139,9 +142,7 @@ function game:update(dt)
     error_region = "main"
 
     error_region = "app_update"
-    xpcall(function()
-        app:update(dt)
-    end, errhand)
+    xpcall(app.update, errhand, app, dt)
 
     hotswap:update(dt)
 
@@ -173,9 +174,7 @@ end
 function game:draw()
     love.graphics.push("all")
     error_region = "app_draw"
-    xpcall(function()
-        app:draw()
-    end, errhand)
+    xpcall(app.draw, errhand, app)
     love.graphics.pop()
 
     if error_occurred then
