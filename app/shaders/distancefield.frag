@@ -1,4 +1,4 @@
-uniform vec3    input_resolution;
+uniform vec2    input_resolution;
 uniform float   input_timer;
 uniform vec2    input_mouse;
 

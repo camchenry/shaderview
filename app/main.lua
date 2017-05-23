@@ -5,18 +5,17 @@ function app:load()
     self.frame = 0
 
     self.canvas = love.graphics.newCanvas()
+    self.mouse = {0, 0}
 
-    local w, h = love.graphics.getDimensions()
-    shaders.distancefield:send('input_resolution', {w, h, 0})
+    shaders.distancefield:send('input_resolution', {love.graphics.getDimensions()})
 end
 
 function app:update(dt)
     self.timer = self.timer + dt
     self.frame = self.frame + 1
 
-    shaders.distancefield:send('input_timer', self.timer)
-    shaders.distancefield:send('input_mouse', {love.mouse.getPosition()})
-    local mx, my = love.mouse.getPosition()
+    self.mouse[1], self.mouse[2] = love.mouse.getPosition()
+    shaders.distancefield:send('input_mouse', self.mouse)
 end
 
 function app:draw()
