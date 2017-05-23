@@ -1,3 +1,4 @@
+
 local function file_get_basename(path)
     return path:gsub("(.*/)(.*)", "%2")
 end
@@ -11,16 +12,21 @@ local hotswap = require 'src.hotswap'
 
 local error_occurred = false
 local error_region = "main"
+local error_clear_error = true
 local errors = {}
 
 local function errhand(...)
-    errors[error_region] = {...}
+    errors[error_region] = {
+        message = ...
+    }
     print(...)
 end
 
 local old_xpcall = xpcall
 xpcall = function(...)
-    errors[error_region] = nil
+    if error_clear_error then
+        errors[error_region] = nil
+    end
     return old_xpcall(...)
 end
 
@@ -43,9 +49,11 @@ local function shader_load(path)
         getmetatable(shader).send = function(...)
             local args = {...}
 
+            error_clear_error = false
             local ok, result = xpcall(function()
                 old_send(unpack(args))
             end, errhand)
+            error_clear_error = true
 
             if ok then
                 local shader = args[1]
@@ -57,11 +65,7 @@ local function shader_load(path)
         end
 
         for name, args in pairs(shader_uniforms[filename]) do
-            if shader:getExternVariable(name) then
-                shader:send(name, unpack(args))
-            else
-                shader_uniforms[filename][name] = nil
-            end
+            shader:send(name, unpack(args))
         end
     end
 end
@@ -188,23 +192,22 @@ function game:draw()
         love.graphics.setFont(baseFont)
         local line_height = love.graphics.getFont():getHeight()
 
-        for region, error_log in pairs(errors) do
-            if error_log then
+        for region, err in pairs(errors) do
+            if err then
                 -- @TODO include filename
                 y = y + 30
                 love.graphics.setFont(Fonts.bold[18])
                 print_with_shadow('Error during region: "'..region..'"', x, y)
                 y = y + love.graphics.getFont():getHeight()
                 love.graphics.setFont(baseFont)
-                for _, text in ipairs(error_log) do
-                    love.graphics.setColor(0, 0, 0)
-                    love.graphics.print(text, x + 1, y + 1)
-                    love.graphics.setColor(255, 255, 255)
-                    love.graphics.print(text, x, y)
+                local text = err.message
+                love.graphics.setColor(0, 0, 0)
+                love.graphics.print(text, x + 1, y + 1)
+                love.graphics.setColor(255, 255, 255)
+                love.graphics.print(text, x, y)
 
-                    local _, lines = text:gsub('\n', '\n')
-                    y = y + line_height * (lines + 1)
-                end
+                local _, lines = text:gsub('\n', '\n')
+                y = y + line_height * (lines + 1)
             end
         end
     end
