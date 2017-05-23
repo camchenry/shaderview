@@ -1,6 +1,5 @@
 uniform vec2    input_resolution;
 uniform float   input_timer;
-uniform vec2    input_mouse;
 
 const float PI      = 3.1415926535898;
 const float EPSILON = 0.000001;
@@ -15,6 +14,97 @@ const float EPSILON = 0.000001;
 
 // Anti-aliasing
 #define AA 0   // make this 1 is your machine is too slow
+
+float invert(float m) {
+  return 1.0 / m;
+}
+
+mat2 invert(mat2 m) {
+  return mat2(m[1][1],-m[0][1],
+             -m[1][0], m[0][0]) / (m[0][0]*m[1][1] - m[0][1]*m[1][0]);
+}
+
+mat3 invert(mat3 m) {
+  float a00 = m[0][0], a01 = m[0][1], a02 = m[0][2];
+  float a10 = m[1][0], a11 = m[1][1], a12 = m[1][2];
+  float a20 = m[2][0], a21 = m[2][1], a22 = m[2][2];
+
+  float b01 = a22 * a11 - a12 * a21;
+  float b11 = -a22 * a10 + a12 * a20;
+  float b21 = a21 * a10 - a11 * a20;
+
+  float det = a00 * b01 + a01 * b11 + a02 * b21;
+
+  return mat3(b01, (-a22 * a01 + a02 * a21), (a12 * a01 - a02 * a11),
+              b11, (a22 * a00 - a02 * a20), (-a12 * a00 + a02 * a10),
+              b21, (-a21 * a00 + a01 * a20), (a11 * a00 - a01 * a10)) / det;
+}
+
+mat4 invert(mat4 m) {
+  float
+      a00 = m[0][0], a01 = m[0][1], a02 = m[0][2], a03 = m[0][3],
+      a10 = m[1][0], a11 = m[1][1], a12 = m[1][2], a13 = m[1][3],
+      a20 = m[2][0], a21 = m[2][1], a22 = m[2][2], a23 = m[2][3],
+      a30 = m[3][0], a31 = m[3][1], a32 = m[3][2], a33 = m[3][3],
+
+      b00 = a00 * a11 - a01 * a10,
+      b01 = a00 * a12 - a02 * a10,
+      b02 = a00 * a13 - a03 * a10,
+      b03 = a01 * a12 - a02 * a11,
+      b04 = a01 * a13 - a03 * a11,
+      b05 = a02 * a13 - a03 * a12,
+      b06 = a20 * a31 - a21 * a30,
+      b07 = a20 * a32 - a22 * a30,
+      b08 = a20 * a33 - a23 * a30,
+      b09 = a21 * a32 - a22 * a31,
+      b10 = a21 * a33 - a23 * a31,
+      b11 = a22 * a33 - a23 * a32,
+
+      det = b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06;
+
+  return mat4(
+      a11 * b11 - a12 * b10 + a13 * b09,
+      a02 * b10 - a01 * b11 - a03 * b09,
+      a31 * b05 - a32 * b04 + a33 * b03,
+      a22 * b04 - a21 * b05 - a23 * b03,
+      a12 * b08 - a10 * b11 - a13 * b07,
+      a00 * b11 - a02 * b08 + a03 * b07,
+      a32 * b02 - a30 * b05 - a33 * b01,
+      a20 * b05 - a22 * b02 + a23 * b01,
+      a10 * b10 - a11 * b08 + a13 * b06,
+      a01 * b08 - a00 * b10 - a03 * b06,
+      a30 * b04 - a31 * b02 + a33 * b00,
+      a21 * b02 - a20 * b04 - a23 * b00,
+      a11 * b07 - a10 * b09 - a12 * b06,
+      a00 * b09 - a01 * b07 + a02 * b06,
+      a31 * b01 - a30 * b03 - a32 * b00,
+      a20 * b03 - a21 * b01 + a22 * b00) / det;
+}
+
+mat3 rotation_matrix3(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat3(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c          );
+}
+
+mat4 rotation_matrix4(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                0.0,                                0.0,                                0.0,                                1.0);
+}
 
 //------------------------------------------------------------------
 
@@ -42,6 +132,11 @@ float sdEllipsoid(in vec3 p, in vec3 r)
 float udRoundBox(vec3 p, vec3 b, float r)
 {
     return length(max(abs(p)-b,0.0))-r;
+}
+
+float udBox(vec3 p, vec3 b)
+{
+  return length(max(abs(p)-b,0.0));
 }
 
 float sdTorus(vec3 p, vec2 t)
@@ -176,27 +271,57 @@ vec3 opTwist(vec3 p)
     return vec3(m*p.xz,p.y);
 }
 
+vec3 opTx(vec3 p, mat3 m)
+{
+    return invert(m)*p;
+}
+
+vec3 opRep(vec3 p, vec3 c)
+{
+    return mod(p,c)-0.5*c;
+}
+
 //------------------------------------------------------------------
 
 vec2 map(in vec3 pos)
 {
     // Start with a plane
-    vec2 result = vec2(sdPlane(pos), 1);
+    vec2 result = vec2(1);
+
+    vec3 repeat = vec3(0.8);
+
+    vec3 round_box_position = vec3(0);
+    round_box_position.y = ((sin(input_timer/2) + 1)/2)*0.2 + 0.27;
+    round_box_position.z = cos(input_timer) * 0.2;
+    round_box_position.x = sin(input_timer) * 0.2;
+
+    vec2 round_box = vec2(
+        opSub(
+            udRoundBox(
+                opTx(
+                    opRep(pos - round_box_position, repeat),
+                    rotation_matrix3(vec3(1, 1, -1), mod(input_timer * 0.5, 2*PI))
+                ),
+                vec3(0.15), 0.045
+            ),
+            sdSphere(opRep(pos - round_box_position, repeat), 0.25)
+        ),
+    (sin(input_timer + pos.y + pos.z + pos.x)+1)/2*10 + 10);
 
     // Create a round box, then subtract a sphere from it
-    result = opUnion(result,
-        vec2(
-            opSub(
-                udRoundBox(  pos-vec3(0, 0.25, 0), vec3(0.15), 0.05),
-                sdSphere(    pos-vec3(0, 0.25, 0), 0.25)
-            ),
-        13.0)
-    );
+    result = opUnion(result, round_box);
 
-    /* result = opUnion( */
-    /*     vec2(sdPlane(pos), 1.0), */
-    /*     vec2(sdSphere(pos - vec3(0, 0.25, 0), 0.25), 50) */
-    /* ); */
+    vec3 blob_position = round_box_position;
+    vec3 deform = vec3(
+        sin(50 * pos.x),
+        sin(50 * pos.y),
+        sin(50 * pos.z)
+    );
+    float t = (input_timer + pos.x + pos.z + 2*pos.y)*0.2;
+    float blob_color = ((sin(t)+1)/2) * 360;
+    vec2 blob = vec2(0.5 * sdSphere(opRep(pos - blob_position, repeat), 0.15) + 0.03*deform.x*deform.y*deform.z, blob_color);
+
+    result = opUnion(result, blob);
 
     /* result = opUnion( result, vec2( sdBox(       pos-vec3( 1.0,0.25, 0.0), vec3(0.25) ), 3.0 ) ); */
     /* result = opUnion( result, vec2( udRoundBox(  pos-vec3( 1.0,0.25, 1.0), vec3(0.15), 0.1 ), 41.0 ) ); */
@@ -222,10 +347,10 @@ vec2 map(in vec3 pos)
 
 vec2 castRay(in vec3 ro, in vec3 rd)
 {
-    float tmin = EPSILON;
+    float tmin = 0;
     float tmax = 20.0;
 
-#if 1
+#if 0
     // bounding volume
     float tp1 = (0.0-ro.y)/rd.y; if(tp1>0.0) tmax = min(tmax, tp1);
     float tp2 = (1.6-ro.y)/rd.y; if(tp2>0.0) { if(ro.y>1.6) tmin = max(tmin, tp2);
@@ -234,7 +359,7 @@ vec2 castRay(in vec3 ro, in vec3 rd)
 
     float t = tmin;
     float m = -1.0;
-    for(int i=0; i<64; i++)
+    for(int i=0; i<128; i++)
     {
         float precis = 0.000001 * t;
         vec2 res = map(ro+rd*t);
@@ -295,7 +420,7 @@ float calcAO(in vec3 pos, in vec3 nor)
 
 vec3 sky(in vec3 ray_dir)
 {
-    return vec3(0.7, 0.9, 1.0) + ray_dir.y * 0.8;
+    return vec3(0.8, 0.9, 1.0) + ray_dir.y * 0.3;
 }
 
 vec3 render(in vec3 ro, in vec3 rd)
@@ -389,16 +514,15 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 fragCoord)
         vec2 p = (-input_resolution.xy + 2.0*fragCoord)/input_resolution.y;
 #endif
 
-        float rotation_speed = 0.3;
-
         // camera
         vec3 camera_pos = vec3(0);
-        camera_pos.y = 0.7;
-        camera_pos.z = sin(2 * PI * input_mouse.x / input_resolution.x);
-        camera_pos.x = cos(2 * PI * input_mouse.x / input_resolution.x);
-        vec3 target = vec3(0, 0.25, 0);
+        camera_pos.x = sin(input_timer*0.1);
+        camera_pos.y = ((sin(input_timer/2) + 1)/2)*0.2 + 0.27;
+        camera_pos.z = cos(input_timer*0.1);
 
-        float camera_rotation = 0;
+        vec3 target = normalize(camera_pos)*50000;
+
+        float camera_rotation = smoothstep(0, 60, input_timer);
 
         // camera-to-world transformation
         mat3 ca = setCamera(camera_pos, target, camera_rotation);

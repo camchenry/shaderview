@@ -14,8 +14,9 @@ function app:update(dt)
     self.timer = self.timer + dt
     self.frame = self.frame + 1
 
+    shaders.distancefield:send('input_timer', self.timer)
     self.mouse[1], self.mouse[2] = love.mouse.getPosition()
-    shaders.distancefield:send('input_mouse', self.mouse)
+    --shaders.distancefield:send('input_mouse', self.mouse)
 end
 
 function app:draw()

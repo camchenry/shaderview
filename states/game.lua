@@ -51,7 +51,6 @@ local function shader_load(path)
 
             error_clear_error = false
             local region = error_region
-            error_region = "shader_send"
             local ok, result = xpcall(function()
                 old_send(unpack(args))
             end, errhand)
