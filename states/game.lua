@@ -13,6 +13,12 @@ local hotswap = require 'src.hotswap'
 local error_occurred = false
 local error_region = "main"
 local error_clear_error = true
+local error_overlay = {
+    opacity = 0,
+    foreground = {255, 255, 255, 255},
+    shadow = {0, 0, 0, 255},
+    background = {0, 0, 0, 160},
+}
 local errors = {}
 
 local function errhand(...)
@@ -148,10 +154,22 @@ function game:update(dt)
     error_occurred = false
     for region, err in pairs(errors) do
         if err then
+            if not error_occurred then
+                if self.opacityTween then
+                    Timer.cancel(self.opacityTween)
+                end
+                self.opacityTween = Timer.tween(0.1, error_overlay, {opacity=1})
+            end
             error_occurred = true
             break
         end
     end
+
+    if not error_occurred then
+        error_overlay.opacity = 0
+    end
+
+    print(error_overlay.opacity)
 end
 
 function game:keypressed(key, code)
@@ -163,10 +181,14 @@ function game:mousepressed(x, y, mbutton)
 end
 
 local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
-    local b = 1
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.print(text, x + b, y + b, sx, sy, ox, oy, skx, sky)
-    love.graphics.setColor(255, 255, 255)
+    local shadow_size = 1
+
+    local r, g, b, a = unpack(error_overlay.shadow)
+    love.graphics.setColor(r, g, b, a * error_overlay.opacity)
+    love.graphics.print(text, x + shadow_size, y + shadow_size, sx, sy, ox, oy, skx, sky)
+
+    local r, g, b, a = unpack(error_overlay.foreground)
+    love.graphics.setColor(r, g, b, a * error_overlay.opacity)
     love.graphics.print(text, x, y, sx, sy, ox, oy, skx, sky)
 end
 
@@ -177,12 +199,12 @@ function game:draw()
     love.graphics.pop()
 
     if error_occurred then
-        love.graphics.setColor(0, 0, 0, 160)
+        local r, g, b, a = unpack(error_overlay.background)
+        love.graphics.setColor(r, g, b, a * error_overlay.opacity)
         love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-        love.graphics.setColor(255, 255, 255)
-        love.graphics.setFont(Fonts.bold[30])
         local x = 70
         local y = 70
+        love.graphics.setFont(Fonts.bold[30])
         print_with_shadow('Error', x, y)
         local line_height = love.graphics.getFont():getHeight()
         y = y + line_height
@@ -199,10 +221,7 @@ function game:draw()
                 y = y + love.graphics.getFont():getHeight()
                 love.graphics.setFont(baseFont)
                 local text = err.message
-                love.graphics.setColor(0, 0, 0)
-                love.graphics.print(text, x + 1, y + 1)
-                love.graphics.setColor(255, 255, 255)
-                love.graphics.print(text, x, y)
+                print_with_shadow(text, x, y)
 
                 local _, lines = text:gsub('\n', '\n')
                 y = y + line_height * (lines + 1)
