@@ -143,11 +143,17 @@ function game:enter()
 
 end
 
+local function call_app_update(dt)
+    if app then
+        app:update(dt)
+    end
+end
+
 function game:update(dt)
     error_region = "main"
 
     error_region = "app_update"
-    xpcall(app.update, errhand, app, dt)
+    xpcall(call_app_update, errhand, dt)
 
     hotswap:update(dt)
 
@@ -192,10 +198,16 @@ local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
     love.graphics.print(text, x, y, sx, sy, ox, oy, skx, sky)
 end
 
+local function call_app_draw()
+    if app then
+        app:draw()
+    end
+end
+
 function game:draw()
     love.graphics.push("all")
     error_region = "app_draw"
-    xpcall(app.draw, errhand, app)
+    xpcall(call_app_draw, errhand)
     love.graphics.pop()
 
     if error_occurred then
