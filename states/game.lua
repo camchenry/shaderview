@@ -174,8 +174,6 @@ function game:update(dt)
     if not error_occurred then
         error_overlay.opacity = 0
     end
-
-    print(error_overlay.opacity)
 end
 
 function game:keypressed(key, code)
