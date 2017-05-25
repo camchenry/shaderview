@@ -20,6 +20,7 @@ local error_overlay = {
     background = {0, 0, 0, 160},
 }
 local errors = {}
+local channel_filechange = love.thread.getChannel("channel_filechange")
 
 local function errhand(...)
     errors[error_region] = {
@@ -90,7 +91,8 @@ function game:init()
         config.data = {}
         config:load('config/default.lua')
         config:load('config/user.lua')
-        hotswap:load_config_data(config.data)
+        local channel_config = love.thread.getChannel("channel_filechange_config")
+        channel_config:push(config.data)
         print('Config loaded')
     end
 
@@ -106,6 +108,15 @@ function game:init()
                 app:load()
             end
         end, errhand)
+    end
+
+    if not Threads.filechange:isRunning() then
+        local channel_name = "channel_filechange"
+        Threads.filechange:start("channel_filechange",
+                                 "channel_filechange_config",
+                                 "channel_filechange_files")
+        local channel_config = love.thread.getChannel("channel_filechange_config")
+        channel_config:push(config.data)
     end
 
     if not love.filesystem.exists(config.data.shader_directory) then
@@ -173,7 +184,11 @@ function game:update(dt)
     error_region = "app_update"
     xpcall(call_app_update, errhand, dt)
 
-    hotswap:update(dt)
+    if channel_filechange:peek() then
+        local filepath = channel_filechange:pop()
+        print('File changed: ' .. filepath)
+        hotswap:on_file_changed(filepath)
+    end
 
     error_occurred = false
     for region, err in pairs(errors) do

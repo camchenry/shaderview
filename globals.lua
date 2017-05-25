@@ -93,3 +93,7 @@ CONFIG.debug.error.font = Fonts.monospace
 
 shaders = {}
 shader_uniforms = {}
+
+Threads = {
+    filechange = love.thread.newThread('threads/filechange.lua'),
+}
