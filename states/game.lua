@@ -126,7 +126,6 @@ function game:init()
     for handler, fn in pairs(love.handlers) do
         if not self[handler] then
             self[handler] = function(...)
-                print(app, handler)
                 if app[handler] then
                     local region = error_region
                     error_region = "app_" .. handler
@@ -135,7 +134,6 @@ function game:init()
                 end
             end
         end
-        print(handler, self[handler])
     end
 
     self.newShaderCheck = Timer.every(1, function()
