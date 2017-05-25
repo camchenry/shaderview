@@ -23,9 +23,14 @@ local errors = {}
 
 local function errhand(...)
     errors[error_region] = {
-        message = ...
+        message = tostring(...)
     }
     print(...)
+end
+
+local old_error = error
+error = function(...)
+    return old_error(... or 'nil')
 end
 
 local old_xpcall = xpcall
