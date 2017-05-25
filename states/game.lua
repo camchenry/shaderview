@@ -123,6 +123,21 @@ function game:init()
 
     hotswap:hook('app/main.lua', app_reload)
 
+    for handler, fn in pairs(love.handlers) do
+        if not self[handler] then
+            self[handler] = function(...)
+                print(app, handler)
+                if app[handler] then
+                    local region = error_region
+                    error_region = "app_" .. handler
+                    xpcall(app[handler], errhand, ...)
+                    error_region = region
+                end
+            end
+        end
+        print(handler, self[handler])
+    end
+
     self.newShaderCheck = Timer.every(1, function()
         local files = love.filesystem.getDirectoryItems(config.data.shader_directory)
         for i, file in ipairs(files) do
@@ -174,14 +189,6 @@ function game:update(dt)
     if not error_occurred then
         error_overlay.opacity = 0
     end
-end
-
-function game:keypressed(key, code)
-
-end
-
-function game:mousepressed(x, y, mbutton)
-
 end
 
 local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
