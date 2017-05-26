@@ -2,28 +2,26 @@ local app = {}
 
 function app:load()
     self.timer = 0
-    self.frame = 0
+    self.mouse = {love.mouse.getPosition()}
 
     self.canvas = love.graphics.newCanvas()
-    self.mouse = {0, 0}
 
-    shaders.distancefield:send('input_resolution', {love.graphics.getDimensions()})
+    shaders.seascape:send('iResolution', {love.graphics.getDimensions()})
 end
 
 function app:update(dt)
     self.timer = self.timer + dt
-    self.frame = self.frame + 1
 
-    shaders.distancefield:send('input_timer', self.timer)
+    shaders.seascape:send('iGlobalTime', self.timer)
     self.mouse[1], self.mouse[2] = love.mouse.getPosition()
-    --shaders.distancefield:send('input_mouse', self.mouse)
+    shaders.seascape:send('iMouse', self.mouse)
 end
 
 function app:draw()
     love.graphics.setCanvas(self.canvas)
     love.graphics.clear(love.graphics.getBackgroundColor())
     love.graphics.setBlendMode("alpha", "premultiplied")
-    love.graphics.setShader(shaders.distancefield)
+    love.graphics.setShader(shaders.seascape)
     love.graphics.setColor(255, 255, 255)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
     love.graphics.setShader()
