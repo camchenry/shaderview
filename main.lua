@@ -12,8 +12,6 @@ Camera  = require 'libs.camera'
 Timer   = require 'libs.timer'
 Input   = require 'libs.boipushy'
 
-local Graph = require 'libs.debug_graph'
-
 if DEBUG and CONFIG.debug.lovebird.enabled then
     Lovebird = require 'libs.lovebird'
     Lovebird.port = CONFIG.debug.lovebird.port
