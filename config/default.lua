@@ -3,6 +3,8 @@
 return {
     shader_directory = 'app/shaders',
 
+    show_help_on_start = true,
+
     notification_reload_shader = true,
     notification_reload_app = true,
     notification_reload_config = true,

@@ -186,7 +186,19 @@ function game:init()
     end)
 
     self.notification_queue = notify.Queue()
-    self.help_panel = help.Panel()
+    self.help_panel = help.Panel{
+        visible = config.data.show_help_on_start
+    }
+    self.input = Input()
+
+    Keybinds['f5'] = "Reload all shaders and app files"
+    self.input:bind('f5', function()
+        for filepath, _ in pairs(hotswap.hooks) do
+            if not string.match(filepath, '^config/') then
+                hotswap:on_file_changed(filepath)
+            end
+        end
+    end)
 end
 
 function game:enter()
