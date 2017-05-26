@@ -10,7 +10,7 @@ Signal  = require 'libs.signal'
 Inspect = require 'libs.inspect'
 Camera  = require 'libs.camera'
 Timer   = require 'libs.timer'
-xxhash  = require 'libs.xxhash'
+Input   = require 'libs.boipushy'
 
 if DEBUG and CONFIG.debug.lovebird.enabled then
     Lovebird = require 'libs.lovebird'

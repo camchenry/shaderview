@@ -1,3 +1,5 @@
+-- This is the default configuration file
+-- Modifications should go in config/user.lua
 return {
     shader_directory = 'app/shaders',
 

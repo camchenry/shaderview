@@ -91,6 +91,13 @@ Fonts.default = Fonts.regular
 CONFIG.debug.stats.font = Fonts.monospace
 CONFIG.debug.error.font = Fonts.monospace
 
+Shaderview = {
+    _NAME = "Shaderview",
+    _VERSION = "v0.1.0",
+}
+
+Keybinds = {}
+
 shaders = {}
 shader_uniforms = {}
 

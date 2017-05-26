@@ -1,4 +1,3 @@
-
 local function file_get_basename(path)
     return path:gsub("(.*/)(.*)", "%2")
 end
@@ -10,6 +9,7 @@ end
 local config = require 'src.config'
 local hotswap = require 'src.hotswap'
 local notify = require 'src.notification'
+local help = require 'src.help'
 
 local error_occurred = false
 local error_region = "main"
@@ -186,6 +186,7 @@ function game:init()
     end)
 
     self.notification_queue = notify.Queue()
+    self.help_panel = help.Panel()
 end
 
 function game:enter()
@@ -211,6 +212,7 @@ function game:update(dt)
     end
 
     self.notification_queue:update(dt)
+    self.help_panel:update(dt)
 
     error_occurred = false
     for region, err in pairs(errors) do
@@ -256,6 +258,7 @@ function game:draw()
     love.graphics.pop()
 
     self.notification_queue:draw()
+    self.help_panel:draw()
 
     if error_occurred then
         local r, g, b, a = unpack(error_overlay.background)
