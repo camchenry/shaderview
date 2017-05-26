@@ -37,9 +37,9 @@ CONFIG = {
             fontSize        = 16,
             lineHeight      = 18,
             foreground      = {255, 255, 255, 225},
-            shadow          = {0, 0, 0, 225}, 
+            shadow          = {0, 0, 0, 225},
             shadowOffset    = {x = 1, y = 1},
-            position        = {x = 8, y = love.graphics.getHeight()-190},
+            position        = {x = 8, y = love.graphics.getHeight()-170},
 
             kilobytes = false,
         },
@@ -50,7 +50,7 @@ CONFIG = {
             fontSize        = 16,
             background      = {26, 79, 126},
             foreground      = {255, 255, 255},
-            shadow          = {0, 0, 0, 225}, 
+            shadow          = {0, 0, 0, 225},
             shadowOffset    = {x = 1, y = 1},
             position        = {x = 70, y = 70},
         },
@@ -89,6 +89,7 @@ Fonts = {
 Fonts.default = Fonts.regular
 
 CONFIG.debug.stats.font = Fonts.monospace
+CONFIG.debug.stats.position.y = love.graphics.getHeight() - CONFIG.debug.stats.font[CONFIG.debug.stats.fontSize]:getHeight()*6
 CONFIG.debug.error.font = Fonts.monospace
 
 Shaderview = {
