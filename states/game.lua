@@ -95,7 +95,7 @@ function game:init()
         local channel_config = love.thread.getChannel("channel_filechange_config")
         channel_config:push(config.data)
         print('Config reloaded')
-        if self.notification_queue then
+        if self.notification_queue and config.data.notification_reload_config then
             self.notification_queue:add(notify.Notification{
                 text = 'Config reloaded'
             })
@@ -135,7 +135,7 @@ function game:init()
         shader_load(path)
         hotswap:hook(path, function(path)
             shader_load(path)
-            if self.notification_queue then
+            if self.notification_queue and config.data.notification_reload_shader then
                 self.notification_queue:add(notify.Notification{
                     text = 'Shader reloaded: ' .. path
                 })
@@ -150,7 +150,7 @@ function game:init()
 
     hotswap:hook('app/main.lua', function()
         app_reload()
-        if self.notification_queue then
+        if self.notification_queue and config.data.notification_reload_app then
             self.notification_queue:add(notify.Notification{
                 text = 'App reloaded'
             })

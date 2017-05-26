@@ -1,6 +1,10 @@
 return {
     shader_directory = 'app/shaders',
 
+    notification_reload_shader = true,
+    notification_reload_app = true,
+    notification_reload_config = true,
+
     -- How often to check last modified time (fast)
     file_hotswap_modified_interval = 0.2,
 
