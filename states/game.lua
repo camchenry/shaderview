@@ -203,10 +203,15 @@ return {
     self.input = Input()
 
     Keybinds['f5'] = "Reload all shaders and app files"
+    Keybinds['ctrl + f5'] = "Restart Shaderview"
     self.input:bind('f5', function()
-        for filepath, _ in pairs(hotswap.hooks) do
-            if not string.match(filepath, '^config/') then
-                hotswap:on_file_changed(filepath)
+        if love.keyboard.isDown('lctrl', 'rctrl') then
+            love.event.quit('restart')
+        else
+            for filepath, _ in pairs(hotswap.hooks) do
+                if not string.match(filepath, 'config') then
+                    hotswap:on_file_changed(filepath)
+                end
             end
         end
     end)
