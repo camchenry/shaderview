@@ -9,6 +9,7 @@ end
 
 local config = require 'src.config'
 local hotswap = require 'src.hotswap'
+local notify = require 'src.notification'
 
 local error_occurred = false
 local error_region = "main"
@@ -93,7 +94,12 @@ function game:init()
         config:load('config/user.lua')
         local channel_config = love.thread.getChannel("channel_filechange_config")
         channel_config:push(config.data)
-        print('Config loaded')
+        print('Config reloaded')
+        if self.notification_queue then
+            self.notification_queue:add(notify.Notification{
+                text = 'Config reloaded'
+            })
+        end
     end
 
     config_reload()
@@ -129,6 +135,11 @@ function game:init()
         shader_load(path)
         hotswap:hook(path, function(path)
             shader_load(path)
+            if self.notification_queue then
+                self.notification_queue:add(notify.Notification{
+                    text = 'Shader reloaded: ' .. path
+                })
+            end
         end)
     end
 
@@ -137,7 +148,14 @@ function game:init()
 
     app_reload()
 
-    hotswap:hook('app/main.lua', app_reload)
+    hotswap:hook('app/main.lua', function()
+        app_reload()
+        if self.notification_queue then
+            self.notification_queue:add(notify.Notification{
+                text = 'App reloaded'
+            })
+        end
+    end)
 
     for handler, fn in pairs(love.handlers) do
         if not self[handler] then
@@ -152,7 +170,7 @@ function game:init()
         end
     end
 
-    self.newShaderCheck = Timer.every(1, function()
+    self.new_shader_check = Timer.every(1, function()
         local files = love.filesystem.getDirectoryItems(config.data.shader_directory)
         for i, file in ipairs(files) do
             local path = config.data.shader_directory .. '/' .. file
@@ -166,6 +184,8 @@ function game:init()
             end
         end
     end)
+
+    self.notification_queue = notify.Queue()
 end
 
 function game:enter()
@@ -189,6 +209,8 @@ function game:update(dt)
         print('File changed: ' .. filepath)
         hotswap:on_file_changed(filepath)
     end
+
+    self.notification_queue:update(dt)
 
     error_occurred = false
     for region, err in pairs(errors) do
@@ -232,6 +254,8 @@ function game:draw()
     error_region = "app_draw"
     xpcall(call_app_draw, errhand)
     love.graphics.pop()
+
+    self.notification_queue:draw()
 
     if error_occurred then
         local r, g, b, a = unpack(error_overlay.background)
