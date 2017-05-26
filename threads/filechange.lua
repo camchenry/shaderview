@@ -5,6 +5,7 @@ local xxhash = require 'libs.xxhash'
 local channel_filechange = love.thread.getChannel(select(1, ...))
 local channel_config     = love.thread.getChannel(select(2, ...))
 local channel_files      = love.thread.getChannel(select(3, ...))
+local channel_quit       = love.thread.getChannel(select(4, ...))
 
 local config = channel_config:demand()
 
@@ -96,6 +97,10 @@ while 1 do
         timer_modified = timer_modified + interval_modified
         --print('Checking file modified')
         check_file_modified()
+    end
+
+    if channel_quit:peek() then
+        break
     end
 
     if channel_config:peek() then

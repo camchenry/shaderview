@@ -110,6 +110,16 @@ function love.threaderror(thread, errorMessage)
     print("Thread error!\n" .. errorMessage)
 end
 
+function love.quit()
+    for name, thread in pairs(Threads) do
+        if thread:isRunning() then
+            local channel = love.thread.getChannel('channel_' .. name .. '_quit')
+            channel:push('quit')
+            thread:wait()
+        end
+    end
+end
+
 -----------------------------------------------------------
 -- Error screen.
 -----------------------------------------------------------

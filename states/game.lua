@@ -133,7 +133,8 @@ return {
         local channel_name = "channel_filechange"
         Threads.filechange:start("channel_filechange",
                                  "channel_filechange_config",
-                                 "channel_filechange_files")
+                                 "channel_filechange_files",
+                                 "channel_filechange_quit")
         local channel_config = love.thread.getChannel("channel_filechange_config")
         channel_config:push(config.data)
     end
