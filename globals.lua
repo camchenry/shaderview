@@ -73,7 +73,7 @@ local function makeFont(path)
             local f = love.graphics.newFont(path, size)
             rawset(t, size, f)
             return f
-        end 
+        end
     })
 end
 
@@ -104,4 +104,32 @@ shader_uniforms = {}
 
 Threads = {
     filechange = love.thread.newThread('threads/filechange.lua'),
+}
+
+Lume    = require 'libs.lume'
+Husl    = require 'libs.husl'
+Class   = require 'libs.class'
+Vector  = require 'libs.vector'
+State   = require 'libs.state'
+Signal  = require 'libs.signal'
+Inspect = require 'libs.inspect'
+Camera  = require 'libs.camera'
+Timer   = require 'libs.timer'
+Input   = require 'libs.boipushy'
+
+if DEBUG and CONFIG.debug.lovebird.enabled then
+    Lovebird = require 'libs.lovebird'
+    Lovebird.port = CONFIG.debug.lovebird.port
+    Lovebird.wrapprint = CONFIG.debug.lovebird.wrapPrint
+    Lovebird.echoinput = CONFIG.debug.lovebird.echoInput
+    Lovebird.updateinterval = CONFIG.debug.lovebird.updateInterval
+    Lovebird.maxlines = CONFIG.debug.lovebird.maxLines
+    print('Running lovebird on localhost:' .. Lovebird.port)
+    if CONFIG.debug.lovebird.openInBrowser then
+        love.system.openURL("http://localhost:" .. Lovebird.port)
+    end
+end
+
+States = {
+    game = require 'states.game',
 }

@@ -10,6 +10,7 @@ local config = require 'src.config'
 local hotswap = require 'src.hotswap'
 local notify = require 'src.notification'
 local help = require 'src.help'
+local gui = require 'src.gui'
 
 local error_occurred = false
 local error_region = "main"
@@ -200,6 +201,18 @@ return {
     self.help_panel = help.Panel{
         visible = config.data.show_help_on_start
     }
+
+    local nk = Nuklear
+    gui_instance = gui.Instance{
+        font_header = Fonts.default[18],
+        style = {
+            font = Fonts.monospace[16],
+            text = {
+                color = nk.colorRGBA(255, 255, 255)
+            },
+        }
+    }
+
     self.input = Input()
 
     Keybinds['f5'] = "Reload all shaders and app files"
@@ -241,6 +254,10 @@ function game:update(dt)
 
     self.notification_queue:update(dt)
     self.help_panel:update(dt)
+
+    if DEBUG then
+        gui_instance:update(dt)
+    end
 
     error_occurred = false
     for region, err in pairs(errors) do

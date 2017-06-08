@@ -1,39 +1,66 @@
 local loadTimeStart = love.timer.getTime()
 require 'globals'
 
-Lume    = require 'libs.lume'
-Husl    = require 'libs.husl'
-Class   = require 'libs.class'
-Vector  = require 'libs.vector'
-State   = require 'libs.state'
-Signal  = require 'libs.signal'
-Inspect = require 'libs.inspect'
-Camera  = require 'libs.camera'
-Timer   = require 'libs.timer'
-Input   = require 'libs.boipushy'
+local tree = (...)
 
-if DEBUG and CONFIG.debug.lovebird.enabled then
-    Lovebird = require 'libs.lovebird'
-    Lovebird.port = CONFIG.debug.lovebird.port
-    Lovebird.wrapprint = CONFIG.debug.lovebird.wrapPrint
-    Lovebird.echoinput = CONFIG.debug.lovebird.echoInput
-    Lovebird.updateinterval = CONFIG.debug.lovebird.updateInterval
-    Lovebird.maxlines = CONFIG.debug.lovebird.maxLines
-    print('Running lovebird on localhost:' .. Lovebird.port)
-    if CONFIG.debug.lovebird.openInBrowser then
-        love.system.openURL("http://localhost:" .. Lovebird.port)
+local function c_loader(modname, fn_name)
+    local os = love.system.getOS()
+    if not os then
+        error("Cannot load native modules, OS not found.")
     end
+
+    local ext  = os == 'Windows' and ".dll" or ".so"
+    local file = modname:gsub("%.", "/") .. ext
+
+    local cpaths = {
+        "/libs/nuklear/?",
+    }
+
+    for _, elem in ipairs(cpaths) do
+        elem = elem:gsub('%?', file)
+
+        local base = nil
+        if love.filesystem.isFused() then
+            base = love.filesystem.getSourceBaseDirectory()
+            if can_open(base .. "/" ..elem) == false then
+                base = nil -- actually, file not found
+            end
+        elseif love.filesystem.exists(elem) then
+            base = love.filesystem.getRealDirectory(elem)
+        end
+
+        if base then
+            local path = base .. "/" .. elem
+            local lib, err1 = package.loadlib(path, "loveopen_"..fn_name)
+            if lib then return lib end
+
+            local err2
+            lib, err2 = package.loadlib(path, "luaopen_"..fn_name)
+            if lib then return lib end
+
+            if err1 == err2 then
+                error(err1)
+            else
+                error(err1.."\n"..err2)
+            end
+        end
+    end
+
+    error("no library '" .. file .. "' in path.")
 end
 
-States = {
-    game = require 'states.game',
-}
+local function c_load(modname)
+    return c_loader(modname, modname:gsub("%.", "_"))
+end
+
+Nuklear = c_load('nuklear')()
 
 function love.load()
     love.window.setIcon(love.image.newImageData(CONFIG.window.icon))
     love.graphics.setDefaultFilter(CONFIG.graphics.filter.down,
                                    CONFIG.graphics.filter.up,
                                    CONFIG.graphics.filter.anisotropy)
+
 
     -- Draw is left out so we can override it ourselves
     local callbacks = {'errhand', 'update'}
@@ -43,6 +70,8 @@ function love.load()
 
     State.registerEvents(callbacks)
     State.switch(States.game)
+
+    Nuklear.init()
 
     if DEBUG then
         local loadTimeEnd = love.timer.getTime()
@@ -67,43 +96,38 @@ function love.draw()
     local draw_time_end = love.timer.getTime()
     local draw_time = draw_time_end - draw_time_start
 
-    if DEBUG then
-        love.graphics.push()
-        local x, y = CONFIG.debug.stats.position.x, CONFIG.debug.stats.position.y
-        local dy = CONFIG.debug.stats.lineHeight
-        local stats = love.graphics.getStats()
-        local unit = "KB"
-        local ram = collectgarbage("count")
-        local vram = stats.texturememory / 1024
-        if not CONFIG.debug.stats.kilobytes then
-            ram = ram / 1024
-            vram = vram / 1024
-            unit = "MB"
-        end
-        local info = {
-            "FPS: " .. ("%-3d|%7.3fms"):format(love.timer.getFPS(), love.timer.getAverageDelta() * 1000),
-            "Draw calls: " .. stats.drawcalls,
-            ("RAM:%6.2f%s | VRAM:%6.2f%s"):format(ram, unit, vram, unit),
-            ("Canvases: %d | Switches: %d"):format(stats.canvases, stats.canvasswitches),
-            "Images: " .. stats.images,
-            "Shader switches: " .. stats.shaderswitches,
-        }
-        love.graphics.setFont(CONFIG.debug.stats.font[CONFIG.debug.stats.fontSize])
-        for i, text in ipairs(info) do
-            local sx, sy = CONFIG.debug.stats.shadowOffset.x, CONFIG.debug.stats.shadowOffset.y
-            love.graphics.setColor(CONFIG.debug.stats.shadow)
-            love.graphics.print(text, x + sx, y + sy + (i-1)*dy)
-            love.graphics.setColor(CONFIG.debug.stats.foreground)
-            love.graphics.print(text, x, y + (i-1)*dy)
-        end
-        love.graphics.pop()
-    end
+    Nuklear.draw()
 end
 
 function love.keypressed(key, code, isRepeat)
+    Nuklear.keypressed(key, code, isRepeat)
     if not RELEASE and code == CONFIG.debug.key then
         DEBUG = not DEBUG
     end
+end
+
+function love.keyreleased(key, code)
+    Nuklear.keyreleased(key, code)
+end
+
+function love.mousepressed(x, y, button, istouch)
+    Nuklear.mousepressed(x, y, button, istouch)
+end
+
+function love.mousereleased(x, y, button, istouch)
+    Nuklear.mousereleased(x, y, button, istouch)
+end
+
+function love.mousemoved(x, y, dx, dy, istouch)
+    Nuklear.mousemoved(x, y, dx, dy, istouch)
+end
+
+function love.textinput(text)
+    Nuklear.textinput(text)
+end
+
+function love.wheelmoved(x, y)
+    Nuklear.wheelmoved(x, y)
 end
 
 function love.threaderror(thread, errorMessage)
@@ -111,6 +135,7 @@ function love.threaderror(thread, errorMessage)
 end
 
 function love.quit()
+    Nuklear.shutdown()
     for name, thread in pairs(Threads) do
         if thread:isRunning() then
             local channel = love.thread.getChannel('channel_' .. name .. '_quit')
