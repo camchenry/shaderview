@@ -76,40 +76,116 @@ function gui.Instance:draw_performance()
     nk.windowEnd()
 end
 
-local function uniform_tree_create(vars)
-    local nk = Nuklear
-    for key, value in pairs(vars) do
-        value = value[1]
-        if type(value) == "string" or type(value) == "number" then
-            nk.layoutRow('dynamic', 30, {0.4, 0.6})
-            nk.label(key)
-            nk.edit('simple', {value=Inspect(value)})
-        elseif type(value) == "table" then
-            local table = value[1]
-            if nk.treePush('node', key) then
-                for key, value in pairs(value) do
-                    nk.layoutRow('dynamic', 30, {0.4, 0.6})
-                    nk.label(key)
-                    nk.edit('simple', {value=Inspect(value)})
-                end
-                nk.treePop()
-            end
-        end
-    end
-end
-
 function gui.Instance:draw_uniforms()
     local nk = Nuklear
     local w, h = 350, 400
     nk.stylePush({
         font = self.font_header
     })
-    if nk.windowBegin('Shader Uniforms', love.graphics.getWidth() - w - 20, love.graphics.getHeight() - h - 240, w, h, 'title', 'movable', 'minimizable') then
+    if nk.windowBegin('Shader Uniforms', love.graphics.getWidth() - w - 20, love.graphics.getHeight() - h - 240, w, h, 'title', 'movable', 'minimizable', 'scrollbar') then
         nk.stylePop()
 
-        for filename, vars in pairs(shader_uniforms) do
+        for filename, uniforms in pairs(shader_uniforms) do
             if nk.treePush('tab', filename) then
-                uniform_tree_create(vars)
+                for uniform_name, value in pairs(uniforms) do
+                    local vartype, components, arrayelements = shaders[filename]:getExternVariable(uniform_name)
+                    local sub_components = 1
+                    local type_string = "unused"
+                    if type(value[1]) == "table" then
+                        if type(value[1][1]) == "table" then
+                            -- matrix
+                            sub_components = #value[1]
+                        end
+                    end
+
+                    -- @Hack Love doesn't internally what you would expect as the
+                    -- variable type, so I'm transforming them again into what
+                    -- it should return
+                    if vartype == "float" then
+                        if sub_components > 1 then
+                            -- matrix
+                            type_string = "mat" .. sub_components
+                            vartype = "matrix"
+                        elseif sub_components == 1 then
+                            -- vector or float
+                            if components > 1 then
+                                -- vecN
+                                type_string = "vec" .. components
+                                vartype = "vector"
+                            elseif components == 1 then
+                                -- float
+                                type_string = "float"
+                            end
+                        end
+                    elseif vartype == "int" then
+                        type_string = "int"
+                    elseif vartype == "bool" then
+                        type_string = "bool"
+                    elseif vartype == "image" then
+                        type_string = "image"
+                    elseif vartype == "matrix" then
+                        type_string = "matrix"
+                    elseif vartype == "unknown" then
+                        type_string = "unknown"
+                    elseif vartype == nil then
+                        -- unused
+                    end
+
+                    if vartype then
+                        if arrayelements > 1 then
+                            type_string = type_string .. '['..arrayelements..']'
+                        end
+                    end
+
+                    local doPop = false
+                    if nk.treePush('tab', uniform_name .. ' : ' .. type_string) then
+                        doPop = true
+
+                        if vartype == "float" then
+                            local value = value[1]
+                            nk.label(tostring(value))
+                        elseif vartype == "int" then
+                            local value = value[1]
+                            nk.label(tostring(value))
+                        elseif vartype == "bool" then
+                            local value = value[1]
+                            nk.label(tostring(value))
+                        elseif vartype == "image" then
+                            local image = unpack(value)
+                            love.graphics.push("all")
+                            local x, y, w, h = nk.widgetBounds()
+                            love.graphics.scale(0.5, 0.5)
+                            nk.image(image, x, y, image:getWidth(), image:getHeight())
+                            nk.layoutRow('dynamic', image:getHeight(), 1)
+                            love.graphics.pop()
+                        elseif vartype == "matrix" then
+                            local matrix = unpack(value)
+                            local cols = sub_components
+                            local rows = sub_components
+                            for row=1, rows do
+                                nk.layoutRow('dynamic', 20, cols)
+                                for col=1, cols do
+                                    nk.label(tostring(matrix[row][col]))
+                                end
+                            end
+                        -- @Hack
+                        elseif vartype == "vector" then
+                            local vector = unpack(value)
+                            for i, v in ipairs(vector) do
+                                nk.layoutRow('dynamic', 20, 2)
+                                nk.label('['..tostring(i)..']')
+                                nk.label(tostring(v))
+                            end
+                        elseif vartype == "unknown" then
+                            nk.label('Unknown type')
+                        elseif vartype == nil then
+                        end
+                    end
+
+                    if doPop then
+                        nk.treePop()
+                    end
+                end
                 nk.treePop()
             end
         end

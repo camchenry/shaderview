@@ -204,9 +204,9 @@ return {
 
     local nk = Nuklear
     gui_instance = gui.Instance{
-        font_header = Fonts.default[18],
+        font_header = Fonts.default[16],
         style = {
-            font = Fonts.monospace[16],
+            font = Fonts.monospace[14],
             text = {
                 color = nk.colorRGBA(255, 255, 255)
             },
