@@ -49,26 +49,26 @@ function gui.Instance:draw_performance()
         images = "Images: " .. stats.images,
         shader_switches = "Shader switches: " .. stats.shaderswitches,
     }
-    local w, h = 350, 200
+    local w, h = 350, 160
     nk.stylePush({
         font = self.font_header
     })
-    if nk.windowBegin('Performance', love.graphics.getWidth() - w - 20, love.graphics.getHeight() - h - 20, w, h, 'title', 'movable', 'minimizable') then
+    if nk.windowBegin('Performance', love.graphics.getWidth() - w - 10, love.graphics.getHeight() - h - 10, w, h, 'title', 'movable', 'minimizable') then
         nk.stylePop()
-        nk.layoutRow('dynamic', 20, 2)
+        nk.layoutRow('dynamic', 15, 2)
         nk.label(info.fps)
         nk.label(info.delta)
-        nk.layoutRow('dynamic', 20, 2)
+        nk.layoutRow('dynamic', 15, 2)
         nk.label(info.ram)
         nk.label(info.vram)
-        nk.layoutRow('dynamic', 20, 1)
+        nk.layoutRow('dynamic', 15, 1)
         nk.label(info.draw_calls)
-        nk.layoutRow('dynamic', 20, 2)
+        nk.layoutRow('dynamic', 15, 2)
         nk.label(info.canvases)
         nk.label(info.canvas_switches)
-        nk.layoutRow('dynamic', 20, 1)
+        nk.layoutRow('dynamic', 15, 1)
         nk.label(info.images)
-        nk.layoutRow('dynamic', 20, 1)
+        nk.layoutRow('dynamic', 15, 1)
         nk.label(info.shader_switches)
     else
         nk.stylePop()
@@ -82,7 +82,7 @@ function gui.Instance:draw_uniforms()
     nk.stylePush({
         font = self.font_header
     })
-    if nk.windowBegin('Shader Uniforms', love.graphics.getWidth() - w - 20, love.graphics.getHeight() - h - 240, w, h, 'title', 'movable', 'minimizable', 'scrollbar') then
+    if nk.windowBegin('Shader Uniforms', love.graphics.getWidth() - w - 10, 10, w, h, 'title', 'movable', 'minimizable', 'scrollbar') then
         nk.stylePop()
 
         for filename, uniforms in pairs(shader_uniforms) do
