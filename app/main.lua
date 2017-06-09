@@ -16,6 +16,10 @@ function app:update(dt)
     shaders.seascape:send('iMouse', self.mouse)
 end
 
+function app:resize(w, h)
+    shaders.seascape:send('iResolution', {w, h})
+end
+
 function app:draw()
     love.graphics.clear(love.graphics.getBackgroundColor())
     love.graphics.setBlendMode("alpha", "premultiplied")
