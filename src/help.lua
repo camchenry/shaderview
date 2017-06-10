@@ -24,14 +24,15 @@ help.Panel = Class{
     init = function(self, props)
         self.padding = love.graphics.getWidth() * 0.05
         self.visible = true
+        self.visible_toggle_key = 'f1'
         props = props or {}
         for k, v in pairs(props) do
             self[k] = v
         end
 
-        Keybinds['f1'] = "Toggle help menu"
+        Keybinds[self.visible_toggle_key] = "Toggle help menu"
         self.input = Input()
-        self.input:bind('f1', function()
+        self.input:bind(self.visible_toggle_key, function()
             self.visible = not self.visible
         end)
     end,
@@ -80,12 +81,17 @@ help.Panel = Class{
             y = y + 20
 
             for key, description in pairs(Keybinds) do
-                love.graphics.setFont(Fonts.regular[20])
-                y = y + love.graphics.getFont():getHeight()
+                love.graphics.setFont(regular_font)
+                y = y + regular_font:getHeight()
                 printf_with_shadow(description, x, y, self.width_inner/2, "left")
-                love.graphics.setFont(Fonts.monospace[20])
+                love.graphics.setFont(monospace_font)
                 printf_with_shadow(string.upper(key), x, y, self.width_inner/2, "right")
             end
+
+            y = y + 50
+
+            love.graphics.setFont(Fonts.bold[20])
+            print_with_shadow('Press ' .. string.upper(self.visible_toggle_key) .. ' to close this menu', x, y)
 
             love.graphics.pop()
         end
