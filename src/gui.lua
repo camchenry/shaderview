@@ -53,7 +53,7 @@ function gui.Instance:draw_performance()
     nk.stylePush({
         font = self.font_header
     })
-    if nk.windowBegin('Performance', love.graphics.getWidth() - w - 10, love.graphics.getHeight() - h - 10, w, h, 'title', 'movable', 'minimizable') then
+    if nk.windowBegin('Performance', love.graphics.getWidth() - w - 10, love.graphics.getHeight() - h - 10, w, h, 'title', 'movable', 'minimizable', 'scalable', 'scrollbar', 'scroll auto hide') then
         nk.stylePop()
         nk.layoutRow('dynamic', 15, 2)
         nk.label(info.fps)
@@ -82,7 +82,7 @@ function gui.Instance:draw_uniforms()
     nk.stylePush({
         font = self.font_header
     })
-    if nk.windowBegin('Shader Uniforms', love.graphics.getWidth() - w - 10, 10, w, h, 'title', 'movable', 'minimizable', 'scrollbar') then
+    if nk.windowBegin('Shader Uniforms', love.graphics.getWidth() - w - 10, 10, w, h, 'title', 'movable', 'scalable', 'minimizable', 'scrollbar', 'scroll auto hide') then
         nk.stylePop()
 
         for filename, uniforms in pairs(shader_uniforms) do
