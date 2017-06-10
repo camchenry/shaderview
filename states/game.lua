@@ -187,7 +187,7 @@ return {
     for handler, fn in pairs(love.handlers) do
         if not self[handler] then
             self[handler] = function(...)
-                if app[handler] then
+                if app and app[handler] then
                     local region = error_region
                     error_region = "app_" .. handler
                     xpcall(app[handler], errhand, ...)
