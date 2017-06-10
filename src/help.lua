@@ -69,6 +69,16 @@ help.Panel = Class{
 
             y = y + title_font:getHeight()
 
+            local regular_font = Fonts.regular[20]
+            local monospace_font = Fonts.monospace[20]
+            love.graphics.setFont(regular_font)
+            local text_width = regular_font:getWidth('Save directory: ')
+            y = y + 20
+            print_with_shadow('Save directory: ', x, y)
+            love.graphics.setFont(monospace_font)
+            print_with_shadow(love.filesystem.getSaveDirectory(), x + text_width, y)
+            y = y + 20
+
             for key, description in pairs(Keybinds) do
                 love.graphics.setFont(Fonts.regular[20])
                 y = y + love.graphics.getFont():getHeight()
