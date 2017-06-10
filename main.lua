@@ -73,6 +73,17 @@ OS: %s
     ]]):format(love.system.getOS()))
     end
 
+    local save_paths = {
+        'save',
+        'save/screenshots',
+    }
+
+    for _, path in ipairs(save_paths) do
+        if not love.filesystem.exists(path) then
+            love.filesystem.createDirectory(path)
+        end
+    end
+
     love.window.setIcon(love.image.newImageData(CONFIG.window.icon))
     love.graphics.setDefaultFilter(CONFIG.graphics.filter.down,
                                    CONFIG.graphics.filter.up,

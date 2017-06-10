@@ -254,6 +254,21 @@ return {
         -- @Bug for some reason the resize needs to be triggered manually
         self:resize(w, h)
     end)
+
+    Keybinds['f12'] = "Take screenshot"
+    self.input:bind('f12', function()
+        local screenshot = love.graphics.newScreenshot()
+        local save_dir = love.filesystem.getSaveDirectory()
+        local screenshot_dir = 'save/screenshots/'
+        local _, msec = math.modf(love.timer.getTime())
+        msec = math.floor(msec * 1000)
+        local filename = os.date('%Y_%m_%d_%H_%M_%S') .. '_' .. msec .. '.png'
+        screenshot:encode('png', screenshot_dir .. filename)
+        local fullpath = love.filesystem.getSaveDirectory() .. screenshot_dir .. filename
+        self.notification_queue:add(notify.Notification{
+            text = 'Screenshot captured. (' .. screenshot_dir .. filename .. ')'
+        })
+    end)
 end
 
 function game:enter()
