@@ -81,7 +81,9 @@ local function shader_load(path)
         end
 
         for name, args in pairs(shader_uniforms[filename]) do
-            shader:send(name, unpack(args))
+            if shader:getExternVariable(name) then
+                shader:send(name, unpack(args))
+            end
         end
     end
 end
