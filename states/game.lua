@@ -31,17 +31,23 @@ local function errhand(...)
     print(...)
 end
 
-local old_error = error
+local orig_error = error
 error = function(...)
-    return old_error(... or 'nil')
+    return orig_error(... or 'nil')
 end
 
-local old_xpcall = xpcall
+local orig_xpcall = xpcall
 xpcall = function(...)
     if error_clear_error then
         errors[error_region] = nil
     end
-    return old_xpcall(...)
+    return orig_xpcall(...)
+end
+
+-- This override allows dynamically switching the Shader:send function so that
+-- we can inspect what's going into it and extract the values.
+local function shader_metatable_send_override(filename, shader, ...)
+    shader_sends[filename](shader, ...)
 end
 
 local function shader_load(path)
@@ -59,14 +65,17 @@ local function shader_load(path)
             shader_uniforms[filename] = {}
         end
 
-        local old_send = getmetatable(shader).send
-        getmetatable(shader).send = function(...)
+        if not shader_metatable_send_default then
+            shader_metatable_send_default = getmetatable(shader).send
+        end
+
+        shader_sends[filename] = function(...)
             local args = {...}
 
             error_clear_error = false
             local region = error_region
             local ok, result = xpcall(function()
-                old_send(unpack(args))
+                shader_metatable_send_default(unpack(args))
             end, errhand)
             error_region = region
             error_clear_error = true
@@ -78,6 +87,10 @@ local function shader_load(path)
                 table.remove(args, 1)
                 shader_uniforms[filename][variable] = args
             end
+        end
+
+        getmetatable(shader).send = function(...)
+            shader_metatable_send_override(filename, ...)
         end
 
         for name, args in pairs(shader_uniforms[filename]) do
