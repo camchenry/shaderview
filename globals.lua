@@ -117,7 +117,6 @@ Inspect = require 'libs.inspect'
 Camera  = require 'libs.camera'
 Timer   = require 'libs.timer'
 Input   = require 'libs.boipushy'
-Deepcopy = require 'libs.deepcopy'
 
 if DEBUG and CONFIG.debug.lovebird.enabled then
     Lovebird = require 'libs.lovebird'
