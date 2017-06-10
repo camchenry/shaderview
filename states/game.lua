@@ -231,6 +231,29 @@ return {
             end
         end
     end)
+
+    Keybinds['f11'] = "Toggle fullscreen"
+    self.input:bind('f11', function()
+        local w, h, flags = love.window.getMode()
+        local x, y = flags.x, flags.y
+        if flags.fullscreen then
+            w = self.windowed_w
+            h = self.windowed_h
+            x = self.windowed_x
+            y = self.windowed_y
+        else
+            self.windowed_w = w
+            self.windowed_h = h
+            self.windowed_x = x
+            self.windowed_y = y
+        end
+        flags.fullscreen = not flags.fullscreen
+        flags.x = x
+        flags.y = y
+        love.window.setMode(w, h, flags)
+        -- @Bug for some reason the resize needs to be triggered manually
+        self:resize(w, h)
+    end)
 end
 
 function game:enter()
