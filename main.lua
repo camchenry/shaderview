@@ -2,6 +2,7 @@ local loadTimeStart = love.timer.getTime()
 require 'globals'
 
 local tree = (...)
+local cpaths = {}
 
 local function c_loader(modname, fn_name)
     local os = love.system.getOS()
@@ -11,10 +12,6 @@ local function c_loader(modname, fn_name)
 
     local ext  = os == 'Windows' and ".dll" or ".so"
     local file = modname:gsub("%.", "/") .. ext
-
-    local cpaths = {
-        "/libs/nuklear/?",
-    }
 
     for _, elem in ipairs(cpaths) do
         elem = elem:gsub('%?', file)
@@ -53,9 +50,29 @@ local function c_load(modname)
     return c_loader(modname, modname:gsub("%.", "_"))
 end
 
-Nuklear = c_load('nuklear')()
-
 function love.load()
+    if love.system.getOS() == "Windows" then
+        cpaths[#cpaths+1] = "/libs/nuklear/win64/?"
+        Nuklear = c_load('nuklear')()
+    elseif love.system.getOS() == "Linux" then
+        cpaths[#cpaths+1] = "/libs/nuklear/linux64/?"
+        Nuklear = c_load('nuklear')()
+    elseif love.system.getOS() == "OS X" then
+        --cpaths[#cpaths+1] = "/libs/nuklear/osx64/?"
+        --Nuklear = c_load('nuklear')
+        error([[
+OS X binaries for the love-nuklear GUI are currently not included. If you are
+willing, please open an issue to help build the binaries.
+    ]])
+    else
+        error(([[
+Your operating system is currently not supported. Please open an issue with the
+issue tracker and include your OS and device info.
+
+OS: %s
+    ]]):format(love.system.getOS()))
+    end
+
     love.window.setIcon(love.image.newImageData(CONFIG.window.icon))
     love.graphics.setDefaultFilter(CONFIG.graphics.filter.down,
                                    CONFIG.graphics.filter.up,
