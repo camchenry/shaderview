@@ -215,6 +215,7 @@ return {
 
     self.input = Input()
 
+    Keybinds[CONFIG.debug.key] = "Toggle debug windows"
     Keybinds['f5'] = "Reload all shaders and app files"
     Keybinds['ctrl + f5'] = "Restart Shaderview"
     self.input:bind('f5', function()
