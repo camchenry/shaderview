@@ -69,6 +69,8 @@ local function shader_load(path)
             shader_metatable_send_default = getmetatable(shader).send
         end
 
+        shader_name_lookup[shader] = filename
+
         shader_sends[filename] = function(...)
             local args = {...}
 
@@ -85,7 +87,7 @@ local function shader_load(path)
                 table.remove(args, 1)
                 local variable = args[1]
                 table.remove(args, 1)
-                shader_uniforms[filename][variable] = args
+                shader_uniforms[shader_name_lookup[shader]][variable] = args
             end
         end
 

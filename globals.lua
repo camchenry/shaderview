@@ -100,6 +100,7 @@ Shaderview = {
 Keybinds = {}
 
 shaders = {}
+shader_name_lookup = {}
 shader_uniforms = {}
 shader_sends = {}
 
