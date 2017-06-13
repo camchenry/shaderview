@@ -108,8 +108,8 @@ local game = {}
 function game:init()
     local function config_reload()
         config.data = {}
-        config:load('config/default.lua')
-        config:load('user_config.lua')
+        config:load('save/config/default.lua')
+        config:load('save/config/user.lua')
         local channel_config = love.thread.getChannel("channel_filechange_config")
         channel_config:push(config.data)
         print('Config reloaded')
@@ -120,18 +120,8 @@ function game:init()
         end
     end
 
-    hotswap:hook('config/default.lua', config_reload)
-
-    if not love.filesystem.exists('user_config.lua') then
-        love.filesystem.write('user_config.lua', [[
--- This is the user config file
--- Properties here will overwrite the default config
-return {
-}
-]])
-    end
-
-    hotswap:hook('user_config.lua', config_reload)
+    hotswap:hook('save/config/default.lua', config_reload)
+    hotswap:hook('save/config/user.lua', config_reload)
 
     config_reload()
 

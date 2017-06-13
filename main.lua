@@ -76,6 +76,7 @@ OS: %s
     local save_paths = {
         'save',
         'save/screenshots',
+        'save/config',
     }
 
     for _, path in ipairs(save_paths) do
@@ -83,6 +84,15 @@ OS: %s
             love.filesystem.createDirectory(path)
         end
     end
+
+    if not love.filesystem.exists('save/config/user.lua') then
+        love.filesystem.write('save/config/user.lua', love.filesystem.read('templates/user_config.lua'))
+    end
+
+    if not love.filesystem.exists('save/config/default.lua') then
+        love.filesystem.write('save/config/default.lua', love.filesystem.read('templates/default_config.lua'))
+    end
+
 
     love.window.setIcon(love.image.newImageData(CONFIG.window.icon))
     love.graphics.setDefaultFilter(CONFIG.graphics.filter.down,
