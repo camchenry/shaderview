@@ -35,6 +35,12 @@ help.Panel = Class{
         self.input:bind(self.visible_toggle_key, function()
             self.visible = not self.visible
         end)
+
+        self.width = love.graphics.getWidth()
+        self.height = love.graphics.getHeight()
+
+        self.width_inner = self.width - self.padding*2
+        self.height_inner = self.height - self.padding*2
     end,
 
     update = function(self, dt)

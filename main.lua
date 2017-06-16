@@ -50,44 +50,6 @@ local function c_load(modname)
     return c_loader(modname, modname:gsub("%.", "_"))
 end
 
-local function basename(str)
-    return string.gsub(str, "(.*/)(.*)", "%2")
-end
-
-local function copy_directory(source, dest, dir_name, depth)
-    if not depth then
-        depth = 1
-    end
-    if not love.filesystem.isDirectory(source) then
-        error("Source folder '" .. source .. "' does not exist.")
-    end
-    local files = love.filesystem.getDirectoryItems(source)
-    local slash = love.system.getOS() == "Windows" and "\\" or "/"
-
-    if depth == 1 then
-        dest_src_name = basename(source)
-        if dir_name then
-            dest = dest .. slash .. dir_name
-        else
-            dest = dest .. slash .. basename(source)
-        end
-    end
-    dest = dest .. slash
-    source = source .. slash
-
-    if not love.filesystem.exists(dest) then
-        love.filesystem.createDirectory(dest)
-    end
-
-    for _, file in ipairs(files) do
-        if love.filesystem.isDirectory(source .. file) then
-            copy_directory(source .. file, dest .. file, nil, depth + 1)
-        elseif love.filesystem.isFile(source .. file) then
-            love.filesystem.write(dest .. file, love.filesystem.read(source .. file))
-        end
-    end
-end
-
 function love.load()
     if love.system.getOS() == "Windows" then
         cpaths[#cpaths+1] = "/libs/nuklear/win64/?"
@@ -140,6 +102,7 @@ OS: %s
     love.graphics.setDefaultFilter(CONFIG.graphics.filter.down,
                                    CONFIG.graphics.filter.up,
                                    CONFIG.graphics.filter.anisotropy)
+    love.keyboard.setKeyRepeat(true)
 
 
     -- Draw is left out so we can override it ourselves
@@ -149,7 +112,7 @@ OS: %s
     end
 
     State.registerEvents(callbacks)
-    State.switch(States.game)
+    State.switch(States.splash)
 
     Nuklear.init()
 
