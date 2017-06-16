@@ -135,3 +135,5 @@ end
 States = {
     game = require 'states.game',
 }
+
+Active_Project = {}

@@ -106,6 +106,7 @@ end
 local game = {}
 
 function game:init()
+
     local function config_reload()
         config.data = {}
         config:load('save/config/default.lua')
@@ -147,35 +148,42 @@ function game:init()
         channel_config:push(config.data)
     end
 
-    if not love.filesystem.exists(config.data.shader_directory) then
-        error('Shader directory "' .. config.data.shader_directory .. '" does not exist.')
-    end
+    original_package_path = package.path
 
-    local files = love.filesystem.getDirectoryItems(config.data.shader_directory)
-    for i, file in ipairs(files) do
-        local path = config.data.shader_directory .. '/' .. file
-        shader_load(path)
-        hotswap:hook(path, function(path)
+    local function load_project(name)
+        Active_Project = {}
+        Active_Project.name = name
+        package.path = original_package_path .. ';' .. love.filesystem.getSaveDirectory() .. '/save/projects/' .. name .. '/?.lua'
+
+        local project_dir = 'save/projects/' .. name
+        local shader_dir = project_dir .. '/shaders'
+        local files = love.filesystem.getDirectoryItems(shader_dir)
+        for i, file in ipairs(files) do
+            local path = shader_dir .. '/' .. file
             shader_load(path)
-            if self.notification_queue and config.data.notification_reload_shader then
+            hotswap:hook(path, function(path)
+                shader_load(path)
+                if self.notification_queue and config.data.notification_reload_shader then
+                    self.notification_queue:add(notify.Notification{
+                        text = 'Shader reloaded: ' .. path
+                    })
+                end
+            end)
+        end
+
+        app_reload()
+
+        hotswap:hook('save/projects/' .. name .. '/app/main.lua', function()
+            app_reload()
+            if self.notification_queue and config.data.notification_reload_app then
                 self.notification_queue:add(notify.Notification{
-                    text = 'Shader reloaded: ' .. path
+                    text = 'App reloaded'
                 })
             end
         end)
     end
 
-    app_reload()
-
-    hotswap:hook('app/main.lua', function()
-        app_reload()
-        if self.notification_queue and config.data.notification_reload_app then
-            self.notification_queue:add(notify.Notification{
-                text = 'App reloaded'
-            })
-        end
-    end)
-
+    load_project('demo')
     for handler, fn in pairs(love.handlers) do
         if not self[handler] then
             self[handler] = function(...)

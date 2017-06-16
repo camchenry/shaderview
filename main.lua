@@ -132,8 +132,9 @@ OS: %s
         love.filesystem.write('save/config/default.lua', love.filesystem.read('templates/default_config.lua'))
     end
 
-    copy_directory('templates/demo', 'save/projects')
-
+    if not love.filesystem.exists('save/projects/demo') then
+        copy_directory('templates/demo', 'save/projects')
+    end
 
     love.window.setIcon(love.image.newImageData(CONFIG.window.icon))
     love.graphics.setDefaultFilter(CONFIG.graphics.filter.down,
