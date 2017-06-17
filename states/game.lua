@@ -106,7 +106,6 @@ end
 local game = {}
 
 function game:init()
-
     local function config_reload()
         config.data = {}
         config:load('save/config/default.lua')
@@ -284,7 +283,7 @@ function game:init()
     end)
 end
 
-function game:enter()
+function game:enter(project)
 
 end
 

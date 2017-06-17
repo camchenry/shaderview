@@ -23,6 +23,7 @@ end
 function splash:enter()
     self.project_list = love.filesystem.getDirectoryItems('save/projects')
     self.selected_project = ""
+    self.switch_to_game = false
 
     self.font_header = Fonts.default[18]
     self.style = {
@@ -38,7 +39,15 @@ function splash:enter()
     }
 end
 
+function splash:create_new_project(name)
+    copy_directory('templates/new_project', 'save/projects', name)
+end
+
 function splash:update(dt)
+    if self.switch_to_game and self.selected_project then
+        State.switch(States.game, self.selected_project)
+        return
+    end
     local nk = Nuklear
     nk.frameBegin()
     nk.stylePush(self.style)
@@ -57,7 +66,7 @@ function splash:update(dt)
                 self.selected_project = project
 
                 if self.selected_project and nk.button('Open') then
-                    State.switch(States.game)
+                    self.switch_to_game = true
                 end
             end
         end
@@ -73,7 +82,13 @@ function splash:update(dt)
                 nk.layoutRow('dynamic', 30, 1)
                 nk.edit('field', self.new_project_name_field)
                 nk.spacing(1)
-                nk.button('OK')
+                if nk.button('OK') and self.new_project_name_field.value ~= '' then
+                    self:create_new_project(self.new_project_name_field.value)
+                    self.show_new_project_popup = false
+                    self.new_project_name_field.value = ''
+                    nk.popupClose()
+                    self.project_list = love.filesystem.getDirectoryItems('save/projects')
+                end
             else
                 self.show_new_project_popup = false
             end
