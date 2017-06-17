@@ -149,12 +149,12 @@ function game:init()
 
     original_package_path = package.path
 
-    local function load_project(name)
+    local function load_project(project_name)
         Active_Project = {}
-        Active_Project.name = name
-        package.path = original_package_path .. ';' .. love.filesystem.getSaveDirectory() .. '/save/projects/' .. name .. '/?.lua'
+        Active_Project.name = project_name
+        package.path = original_package_path .. ';' .. love.filesystem.getSaveDirectory() .. '/save/projects/' .. project_name .. '/?.lua'
 
-        local project_dir = 'save/projects/' .. name
+        local project_dir = 'save/projects/' .. project_name
         local shader_dir = project_dir .. '/shaders'
         local files = love.filesystem.getDirectoryItems(shader_dir)
         for i, file in ipairs(files) do
@@ -172,7 +172,7 @@ function game:init()
 
         app_reload()
 
-        hotswap:hook('save/projects/' .. name .. '/app/main.lua', function()
+        hotswap:hook('save/projects/' .. project_name .. '/app/main.lua', function()
             app_reload()
             if self.notification_queue and config.data.notification_reload_app then
                 self.notification_queue:add(notify.Notification{
@@ -180,36 +180,44 @@ function game:init()
                 })
             end
         end)
-    end
 
-    load_project('demo')
-    for handler, fn in pairs(love.handlers) do
-        if not self[handler] then
-            self[handler] = function(...)
-                if app and app[handler] then
-                    local region = error_region
-                    error_region = "app_" .. handler
-                    xpcall(app[handler], errhand, ...)
-                    error_region = region
+        -- @TODO Undefine handlers when switching projects
+        for handler, fn in pairs(love.handlers) do
+            if not self[handler] then
+                self[handler] = function(...)
+                    if app and app[handler] then
+                        local region = error_region
+                        error_region = "app_" .. handler
+                        xpcall(app[handler], errhand, ...)
+                        error_region = region
+                    end
                 end
             end
         end
+
+        if self.new_shader_check then
+            Timer.cancel(self.new_shader_check)
+        end
+        self.new_shader_check = Timer.every(1, function()
+            local shader_dir = 'save/projects/' .. project_name .. '/shaders'
+            local files = love.filesystem.getDirectoryItems(shader_dir)
+            for i, file in ipairs(files) do
+                local path = shader_dir .. '/' .. file
+                local basename = file_get_basename(path)
+                local filename = file_remove_extension(basename)
+                if not shaders[filename] then
+                    shader_load(path)
+                    hotswap:hook(path, function(path)
+                        shader_load(path)
+                    end)
+                end
+            end
+        end)
     end
 
-    self.new_shader_check = Timer.every(1, function()
-        local files = love.filesystem.getDirectoryItems(config.data.shader_directory)
-        for i, file in ipairs(files) do
-            local path = config.data.shader_directory .. '/' .. file
-            local basename = file_get_basename(path)
-            local filename = file_remove_extension(basename)
-            if not shaders[filename] then
-                shader_load(path)
-                hotswap:hook(path, function(path)
-                    shader_load(path)
-                end)
-            end
-        end
-    end)
+    self.load_project = function(self, project)
+        load_project(project)
+    end
 
     self.notification_queue = notify.Queue()
     self.help_panel = help.Panel{
@@ -283,8 +291,8 @@ function game:init()
     end)
 end
 
-function game:enter(project)
-
+function game:enter(prev, project)
+    self:load_project(project)
 end
 
 local function call_app_update(dt)
