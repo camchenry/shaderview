@@ -1,8 +1,6 @@
 -- This is the default configuration file
 -- Modifications should go in user.lua
 return {
-    shader_directory = 'app/shaders',
-
     show_help_on_start = true,
 
     notification_reload_shader = true,
