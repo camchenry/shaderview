@@ -185,10 +185,13 @@ function game:init()
         for handler, fn in pairs(love.handlers) do
             if not self[handler] then
                 self[handler] = function(...)
+                    local args = {...}
+                    -- discard self (game table)
+                    table.remove(args, 1)
                     if app and app[handler] then
                         local region = error_region
                         error_region = "app_" .. handler
-                        xpcall(app[handler], errhand, ...)
+                        xpcall(app[handler], errhand, app, unpack(args))
                         error_region = region
                     end
                 end
