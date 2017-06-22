@@ -36,6 +36,10 @@ help.Panel = Class{
             self.visible = not self.visible
         end)
 
+        self.save_directory = love.filesystem.getSaveDirectory()
+        local slash = love.system.getOS() == "Windows" and '\\' or '/'
+        self.save_directory = self.save_directory .. slash .. 'save'
+
         self.width = love.graphics.getWidth()
         self.height = love.graphics.getHeight()
 
@@ -79,11 +83,16 @@ help.Panel = Class{
             local regular_font = Fonts.regular[20]
             local monospace_font = Fonts.monospace[20]
             love.graphics.setFont(regular_font)
-            local text_width = regular_font:getWidth('Save directory: ')
+
             y = y + 20
+
+            print_with_shadow('Project: ' .. Active_Project.name, x, y)
+            y = y + regular_font:getHeight()
+
+            local text_width = regular_font:getWidth('Save directory: ')
             print_with_shadow('Save directory: ', x, y)
             love.graphics.setFont(monospace_font)
-            print_with_shadow(love.filesystem.getSaveDirectory(), x + text_width, y)
+            print_with_shadow(self.save_directory, x + text_width, y)
             y = y + 20
 
             for key, description in pairs(Keybinds) do
