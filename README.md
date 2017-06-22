@@ -3,6 +3,8 @@ shaderview
 
 A shader viewer tool for the LÖVE game framework.
 
+![](https://user-images.githubusercontent.com/1514176/27416253-42cfb668-56da-11e7-9472-b1c743501c93.png)
+
 ## How to use
 
 Shaderview creates and loads projects from a save directory, which can be found using [love.filesystem.getSaveDirectory](https://love2d.org/wiki/love.filesystem.getSaveDirectory). In this document, the save directory will be referred to as `save/`.
