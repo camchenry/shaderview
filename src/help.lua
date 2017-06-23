@@ -37,8 +37,7 @@ help.Panel = Class{
         end)
 
         self.save_directory = love.filesystem.getSaveDirectory()
-        local slash = love.system.getOS() == "Windows" and '\\' or '/'
-        self.save_directory = self.save_directory .. slash .. 'save'
+        self.save_directory = self.save_directory .. '/save'
 
         self.width = love.graphics.getWidth()
         self.height = love.graphics.getHeight()

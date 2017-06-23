@@ -151,18 +151,17 @@ function copy_directory(source, dest, dir_name, depth)
         error("Source folder '" .. source .. "' does not exist.")
     end
     local files = love.filesystem.getDirectoryItems(source)
-    local slash = love.system.getOS() == "Windows" and "\\" or "/"
 
     if depth == 1 then
         dest_src_name = basename(source)
         if dir_name then
-            dest = dest .. slash .. dir_name
+            dest = dest .. '/' .. dir_name
         else
-            dest = dest .. slash .. basename(source)
+            dest = dest .. '/' .. basename(source)
         end
     end
-    dest = dest .. slash
-    source = source .. slash
+    dest = dest .. '/'
+    source = source .. '/'
 
     if not love.filesystem.exists(dest) then
         love.filesystem.createDirectory(dest)
