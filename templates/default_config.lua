@@ -3,8 +3,16 @@
 return {
     show_help_on_start = true,
 
+    -- Shader reloaded
     notification_reload_shader = true,
+
+    -- Shader reloaded
+    notification_reload_texture = true,
+
+    -- App reloaded
     notification_reload_app = true,
+
+    -- Config reloaded
     notification_reload_config = true,
 
     -- How often to check last modified time (fast)

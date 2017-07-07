@@ -104,6 +104,8 @@ shader_name_lookup = {}
 shader_uniforms = {}
 shader_sends = {}
 
+textures = {}
+
 Threads = {
     filechange = love.thread.newThread('threads/filechange.lua'),
 }

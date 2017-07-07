@@ -103,6 +103,39 @@ local function shader_load(path)
     end
 end
 
+local function check_for_new_shaders(directory)
+    local files = love.filesystem.getDirectoryItems(directory)
+    for i, file in ipairs(files) do
+        local path = directory .. '/' .. file
+        local basename = file_get_basename(path)
+        local filename = file_remove_extension(basename)
+        if not shaders[filename] then
+            shader_load(path)
+            hotswap:hook(path, function(path)
+                shader_load(path)
+            end)
+        end
+    end
+end
+
+local function texture_load(path)
+    error_region = "texture_load"
+    local basename = file_get_basename(path)
+    local filename = file_remove_extension(basename)
+    local ok, texture = xpcall(love.graphics.newImage, errhand, path)
+
+    if not ok then
+        error('Could not load texture: ' .. path)
+        return
+    end
+
+    textures[filename] = texture
+end
+
+local function check_for_new_textures(directory)
+    -- @TODO
+end
+
 local game = {}
 
 function game:init()
@@ -155,6 +188,8 @@ function game:init()
         package.path = original_package_path .. ';' .. love.filesystem.getSaveDirectory() .. '/save/projects/' .. project_name .. '/?.lua'
 
         local project_dir = 'save/projects/' .. project_name
+
+        -- Shader loading
         local shader_dir = project_dir .. '/shaders'
         local files = love.filesystem.getDirectoryItems(shader_dir)
         for i, file in ipairs(files) do
@@ -170,7 +205,29 @@ function game:init()
             end)
         end
 
-        app_reload()
+        if self.new_shader_check then
+            Timer.cancel(self.new_shader_check)
+        end
+
+        self.new_shader_check = Timer.every(1, function()
+            check_for_new_shaders('save/projects/' .. project_name .. '/shaders')
+        end)
+
+        -- Texture loading
+        local texture_dir = project_dir .. '/textures'
+        local files = love.filesystem.getDirectoryItems(texture_dir)
+        for i, file in ipairs(files) do
+            local path = texture_dir .. '/' .. file
+            texture_load(path)
+            hotswap:hook(path, function(path)
+                texture_load(path)
+                if self.notification_queue and config.data.notification_reload_texture then
+                    self.notification_queue:add(notify.Notification{
+                        text = 'Texture reloaded: ' .. path
+                    })
+                end
+            end)
+        end
 
         hotswap:hook('save/projects/' .. project_name .. '/app/main.lua', function()
             app_reload()
@@ -180,6 +237,8 @@ function game:init()
                 })
             end
         end)
+
+        app_reload()
 
         -- @TODO Undefine handlers when switching projects
         for handler, fn in pairs(love.handlers) do
@@ -198,24 +257,6 @@ function game:init()
             end
         end
 
-        if self.new_shader_check then
-            Timer.cancel(self.new_shader_check)
-        end
-        self.new_shader_check = Timer.every(1, function()
-            local shader_dir = 'save/projects/' .. project_name .. '/shaders'
-            local files = love.filesystem.getDirectoryItems(shader_dir)
-            for i, file in ipairs(files) do
-                local path = shader_dir .. '/' .. file
-                local basename = file_get_basename(path)
-                local filename = file_remove_extension(basename)
-                if not shaders[filename] then
-                    shader_load(path)
-                    hotswap:hook(path, function(path)
-                        shader_load(path)
-                    end)
-                end
-            end
-        end)
     end
 
     self.load_project = function(self, project)
