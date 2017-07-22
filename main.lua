@@ -107,8 +107,11 @@ OS: %s
 
     -- Draw is left out so we can override it ourselves
     local callbacks = {'errhand', 'update'}
+    local leftoutCallbacks = {'keypressed', 'keyreleased', 'mousepressed', 'mousereleased', 'mousemoved', 'textinput', 'wheelmoved'}
     for k in pairs(love.handlers) do
-        callbacks[#callbacks+1] = k
+        if not Lume.find(leftoutCallbacks, k) then
+            callbacks[#callbacks+1] = k
+        end
     end
 
     State.registerEvents(callbacks)
@@ -143,34 +146,63 @@ function love.draw()
 end
 
 function love.keypressed(key, code, isRepeat)
-    Nuklear.keypressed(key, code, isRepeat)
     if not RELEASE and code == CONFIG.debug.key then
         DEBUG = not DEBUG
     end
+
+    if Nuklear.keypressed(key, code, isRepeat) then
+        return
+    end
+
+    State.current():keypressed(key, code, isRepeat)
 end
 
 function love.keyreleased(key, code)
-    Nuklear.keyreleased(key, code)
+    if Nuklear.keyreleased(key, code) then
+        return
+    end
+
+    State.current():keyreleased(key, code)
 end
 
 function love.mousepressed(x, y, button, istouch)
-    Nuklear.mousepressed(x, y, button, istouch)
+    if Nuklear.mousepressed(x, y, button, istouch) then
+        return
+    end
+
+    State.current():mousepressed(x, y, button, istouch)
 end
 
 function love.mousereleased(x, y, button, istouch)
-    Nuklear.mousereleased(x, y, button, istouch)
+    if Nuklear.mousereleased(x, y, button, istouch) then
+        return
+    end
+
+    State.current():mousereleased(x, y, button, istouch)
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    Nuklear.mousemoved(x, y, dx, dy, istouch)
+    if Nuklear.mousemoved(x, y, dx, dy, istouch) then
+        return
+    end
+
+    State.current():mousemoved(x, y, dx, dy, istouch)
 end
 
 function love.textinput(text)
-    Nuklear.textinput(text)
+    if Nuklear.textinput(text) then
+        return
+    end
+
+    State.current():textinput(text)
 end
 
 function love.wheelmoved(x, y)
-    Nuklear.wheelmoved(x, y)
+    if Nuklear.wheelmoved(x, y) then
+        return
+    end
+
+    State.current():wheelmoved(x, y)
 end
 
 function love.threaderror(thread, errorMessage)
