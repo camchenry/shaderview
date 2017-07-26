@@ -107,8 +107,11 @@ OS: %s
 
     -- Draw is left out so we can override it ourselves
     local callbacks = {'errhand', 'update'}
+    local left_out_callbacks = {'keypressed', 'keyreleased', 'mousepressed', 'mousereleased', 'mousemoved', 'textinput', 'wheelmoved'}
     for k in pairs(love.handlers) do
-        callbacks[#callbacks+1] = k
+        if not Lume.find(leftoutCallbacks, k) then
+            callbacks[#callbacks+1] = k
+        end
     end
 
     State.registerEvents(callbacks)
@@ -135,7 +138,7 @@ end
 
 function love.draw()
     local draw_time_start = love.timer.getTime()
-    State.current():draw()
+    if State.current().draw then State.current():draw() end
     local draw_time_end = love.timer.getTime()
     local draw_time = draw_time_end - draw_time_start
 
@@ -143,34 +146,63 @@ function love.draw()
 end
 
 function love.keypressed(key, code, isRepeat)
-    Nuklear.keypressed(key, code, isRepeat)
     if not RELEASE and code == CONFIG.debug.key then
         DEBUG = not DEBUG
     end
+
+    if Nuklear.keypressed(key, code, isRepeat) then
+        return
+    end
+
+    if State.current().keypressed then State.current():keypressed(key, code, isRepeat) end
 end
 
 function love.keyreleased(key, code)
-    Nuklear.keyreleased(key, code)
+    if Nuklear.keyreleased(key, code) then
+        return
+    end
+
+    if State.current().keyreleased then State.current():keyreleased(key, code) end
 end
 
 function love.mousepressed(x, y, button, istouch)
-    Nuklear.mousepressed(x, y, button, istouch)
+    if Nuklear.mousepressed(x, y, button, istouch) then
+        return
+    end
+
+    if State.current().mousepressed then State.current():mousepressed(x, y, button, istouch) end
 end
 
 function love.mousereleased(x, y, button, istouch)
-    Nuklear.mousereleased(x, y, button, istouch)
+    if Nuklear.mousereleased(x, y, button, istouch) then
+        return
+    end
+
+    if State.current() then State.current():mousereleased(x, y, button, istouch) end
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    Nuklear.mousemoved(x, y, dx, dy, istouch)
+    if Nuklear.mousemoved(x, y, dx, dy, istouch) then
+        return
+    end
+
+    if State.current().mousemoved then State.current():mousemoved(x, y, dx, dy, istouch) end
 end
 
 function love.textinput(text)
-    Nuklear.textinput(text)
+    if Nuklear.textinput(text) then
+        return
+    end
+
+    if State.current().textinput then State.current():textinput(text) end
 end
 
 function love.wheelmoved(x, y)
-    Nuklear.wheelmoved(x, y)
+    if Nuklear.wheelmoved(x, y) then
+        return
+    end
+
+    if State.current().wheelmoved then State.current():wheelmoved(x, y) end
 end
 
 function love.threaderror(thread, errorMessage)
