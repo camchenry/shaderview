@@ -107,7 +107,7 @@ OS: %s
 
     -- Draw is left out so we can override it ourselves
     local callbacks = {'errhand', 'update'}
-    local leftoutCallbacks = {'keypressed', 'keyreleased', 'mousepressed', 'mousereleased', 'mousemoved', 'textinput', 'wheelmoved'}
+    local left_out_callbacks = {'keypressed', 'keyreleased', 'mousepressed', 'mousereleased', 'mousemoved', 'textinput', 'wheelmoved'}
     for k in pairs(love.handlers) do
         if not Lume.find(leftoutCallbacks, k) then
             callbacks[#callbacks+1] = k
@@ -138,7 +138,7 @@ end
 
 function love.draw()
     local draw_time_start = love.timer.getTime()
-    State.current():draw()
+    if State.current().draw then State.current():draw() end
     local draw_time_end = love.timer.getTime()
     local draw_time = draw_time_end - draw_time_start
 
@@ -154,7 +154,7 @@ function love.keypressed(key, code, isRepeat)
         return
     end
 
-    State.current():keypressed(key, code, isRepeat)
+    if State.current().keypressed then State.current():keypressed(key, code, isRepeat) end
 end
 
 function love.keyreleased(key, code)
@@ -162,7 +162,7 @@ function love.keyreleased(key, code)
         return
     end
 
-    State.current():keyreleased(key, code)
+    if State.current().keyreleased then State.current():keyreleased(key, code) end
 end
 
 function love.mousepressed(x, y, button, istouch)
@@ -170,7 +170,7 @@ function love.mousepressed(x, y, button, istouch)
         return
     end
 
-    State.current():mousepressed(x, y, button, istouch)
+    if State.current().mousepressed then State.current():mousepressed(x, y, button, istouch) end
 end
 
 function love.mousereleased(x, y, button, istouch)
@@ -178,7 +178,7 @@ function love.mousereleased(x, y, button, istouch)
         return
     end
 
-    State.current():mousereleased(x, y, button, istouch)
+    if State.current() then State.current():mousereleased(x, y, button, istouch) end
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
@@ -186,7 +186,7 @@ function love.mousemoved(x, y, dx, dy, istouch)
         return
     end
 
-    State.current():mousemoved(x, y, dx, dy, istouch)
+    if State.current().mousemoved then State.current():mousemoved(x, y, dx, dy, istouch) end
 end
 
 function love.textinput(text)
@@ -194,7 +194,7 @@ function love.textinput(text)
         return
     end
 
-    State.current():textinput(text)
+    if State.current().textinput then State.current():textinput(text) end
 end
 
 function love.wheelmoved(x, y)
@@ -202,7 +202,7 @@ function love.wheelmoved(x, y)
         return
     end
 
-    State.current():wheelmoved(x, y)
+    if State.current().wheelmoved then State.current():wheelmoved(x, y) end
 end
 
 function love.threaderror(thread, errorMessage)
