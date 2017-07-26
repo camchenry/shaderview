@@ -120,11 +120,4 @@ function splash:draw()
     print_with_shadow(Shaderview._VERSION, version_x, version_y)
 end
 
--- set stub functions for any unused handlers
-for handler, fn in pairs(love.handlers) do
-    if not splash[handler] then
-        splash[handler] = function(...) end
-    end
-end
-
 return splash
