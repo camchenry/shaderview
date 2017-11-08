@@ -8,22 +8,22 @@ uniform float iGlobalTime;
  * Contact: tdmaav@gmail.com
  */
 
-uniform const int NUM_STEPS = 8;
-const float PI      = 3.1415926;
-const float EPSILON = 1e-3;
+uniform int NUM_STEPS = 8;
+float PI      = 3.1415926;
+float EPSILON = 1e-3;
 #define EPSILON_NRM (0.1 / iResolution.x)
 
 // sea
-uniform const int ITER_GEOMETRY = 3;
-uniform const int ITER_FRAGMENT = 5;
-uniform const float SEA_HEIGHT = 0.6;
-uniform const float SEA_CHOPPY = 4.0;
-uniform const float SEA_SPEED = 0.8;
-uniform const float SEA_FREQ = 0.16;
-uniform const vec3 SEA_BASE = vec3(0.1,0.19,0.22);
-uniform const vec3 SEA_WATER_COLOR = vec3(0.8,0.9,0.6);
+uniform int ITER_GEOMETRY = 3;
+uniform int ITER_FRAGMENT = 5;
+uniform float SEA_HEIGHT = 0.6;
+uniform float SEA_CHOPPY = 4.0;
+uniform float SEA_SPEED = 0.8;
+uniform float SEA_FREQ = 0.16;
+uniform vec3 SEA_BASE = vec3(0.1,0.19,0.22);
+uniform vec3 SEA_WATER_COLOR = vec3(0.8,0.9,0.6);
 #define SEA_TIME (1.0 + iGlobalTime * SEA_SPEED)
-uniform const mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
+uniform mat2 octave_m = mat2(1.6,1.2,-1.2,1.6);
 
 // math
 mat3 fromEuler(vec3 ang) {
