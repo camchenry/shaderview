@@ -1,3 +1,5 @@
+local game = {}
+
 local function file_get_basename(path)
     return path:gsub("(.*/)(.*)", "%2")
 end
@@ -111,6 +113,9 @@ local function check_for_new_shaders(directory)
         local filename = file_remove_extension(basename)
         if not shaders[filename] then
             shader_load(path)
+            game.notification_queue:add(notify.Notification{
+                text = 'Shader added: ' .. path
+            })
             hotswap:hook(path, function(path)
                 shader_load(path)
             end)
@@ -133,10 +138,22 @@ local function texture_load(path)
 end
 
 local function check_for_new_textures(directory)
-    -- @TODO
+    local files = love.filesystem.getDirectoryItems(directory)
+    for i, file in ipairs(files) do
+        local path = directory .. '/' .. file
+        local basename = file_get_basename(path)
+        local filename = file_remove_extension(basename)
+        if not textures[filename] then
+            texture_load(path)
+            game.notification_queue:add(notify.Notification{
+                text = 'Texture added: ' .. path
+            })
+            hotswap:hook(path, function(path)
+                texture_load(path)
+            end)
+        end
+    end
 end
-
-local game = {}
 
 function game:init()
     local function config_reload()
@@ -228,6 +245,15 @@ function game:init()
                 end
             end)
         end
+
+        if self.new_texture_check then
+            Timer.cancel(self.new_texture_check)
+        end
+
+        self.new_texture_check = Timer.every(1, function()
+            check_for_new_textures('save/projects/' .. project_name .. '/textures')
+        end)
+
 
         hotswap:hook('save/projects/' .. project_name .. '/app/main.lua', function()
             app_reload()
