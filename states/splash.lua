@@ -1,4 +1,4 @@
-local suit    = require 'libs.suit'
+local suit = Suit.new()
 
 local splash = {}
 
@@ -53,11 +53,11 @@ function splash:update(dt)
 
     love.graphics.setFont(Fonts.bold[24])
     suit.layout:push(suit.layout:col(row_width, row_height))
-    suit.Label('Projects', {align = 'left'}, suit.layout:row(row_width, row_height))
+    suit:Label('Projects', {align = 'left'}, suit.layout:row(row_width, row_height))
 
     for i, project in ipairs(self.project_list) do
         love.graphics.setFont(Fonts.regular[16])
-        if suit.Button(project, {align = 'left'}, suit.layout:row()).hit then
+        if suit:Button(project, {align = 'left', cornerRadius = 6}, suit.layout:row()).hit then
             self.selected_project = project
             self.switch_to_game = true
         end
@@ -66,12 +66,12 @@ function splash:update(dt)
 
     suit.layout:push(suit.layout:col(row_width, row_height))
     love.graphics.setFont(Fonts.bold[24])
-    suit.Label('Create new project', {align = 'left'}, suit.layout:col(row_width, row_height))
+    suit:Label('Create new project', {align = 'left'}, suit.layout:col(row_width, row_height))
 
     love.graphics.setFont(Fonts.regular[16])
-    suit.Input(self.new_project_name_state, {align = 'left'}, suit.layout:row())
+    suit:Input(self.new_project_name_state, {align = 'left'}, suit.layout:row())
     if self.new_project_name_state.text ~= '' then
-        if suit.Button('Create project', {align = 'center'}, suit.layout:row()).hit then
+        if suit:Button('Create project', {align = 'center', cornerRadius = 6}, suit.layout:row()).hit then
             self:create_new_project(self.new_project_name_state.text)
             self.project_list = love.filesystem.getDirectoryItems('save/projects')
             self.new_project_name_state.text = ''
@@ -97,15 +97,15 @@ function splash:draw()
     print_with_shadow(Shaderview._VERSION, version_x, version_y)
 
     love.graphics.setColor(255, 255, 255)
-    suit.draw()
+    suit:draw()
 end
 
 function splash:keypressed(key, code, isRepeat)
-    suit.keypressed(key, code, isRepeat)
+    suit:keypressed(key, code, isRepeat)
 end
 
 function splash:textinput(text)
-    suit.textinput(text)
+    suit:textinput(text)
 end
 
 return splash

@@ -120,6 +120,7 @@ Inspect = require 'libs.inspect'
 Camera  = require 'libs.camera'
 Timer   = require 'libs.timer'
 Input   = require 'libs.boipushy'
+Suit    = require 'libs.suit'
 
 if DEBUG and CONFIG.debug.lovebird.enabled then
     Lovebird = require 'libs.lovebird'
