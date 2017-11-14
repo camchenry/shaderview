@@ -65,7 +65,7 @@ help.Panel = Class{
             love.graphics.translate(self.padding, self.padding)
             love.graphics.setColor(255, 255, 255)
 
-            local title_text = Shaderview._NAME
+            local title_text = 'Shaderview'
             local title_font = Fonts.bold[40]
             local title_baseline = y + title_font:getBaseline()
             love.graphics.setFont(title_font)
@@ -75,7 +75,7 @@ help.Panel = Class{
             local version_x = x + title_font:getWidth(title_text) + 15
             local version_y = title_baseline - version_font:getBaseline()
             love.graphics.setFont(version_font)
-            print_with_shadow(Shaderview._VERSION, version_x, version_y)
+            print_with_shadow(Shaderview.version, version_x, version_y)
 
             y = y + title_font:getHeight()
 

@@ -93,8 +93,7 @@ CONFIG.debug.stats.position.y = love.graphics.getHeight() - CONFIG.debug.stats.f
 CONFIG.debug.error.font = Fonts.monospace
 
 Shaderview = {
-    _NAME = "Shaderview",
-    _VERSION = "v0.1.0",
+    version = "v0.2.0",
 }
 
 Keybinds = {}

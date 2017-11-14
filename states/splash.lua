@@ -84,7 +84,7 @@ function splash:draw()
     love.graphics.setBackgroundColor(22, 22, 22)
 
     local x, y = 70, 70
-    local title_text = Shaderview._NAME
+    local title_text = 'Shaderview'
     local title_font = Fonts.bold[40]
     local title_baseline = y + title_font:getBaseline()
     love.graphics.setFont(title_font)
@@ -94,7 +94,7 @@ function splash:draw()
     local version_x = x + title_font:getWidth(title_text) + 15
     local version_y = title_baseline - version_font:getBaseline()
     love.graphics.setFont(version_font)
-    print_with_shadow(Shaderview._VERSION, version_x, version_y)
+    print_with_shadow(Shaderview.version, version_x, version_y)
 
     love.graphics.setColor(255, 255, 255)
     suit:draw()
