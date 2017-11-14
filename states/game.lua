@@ -268,16 +268,7 @@ function game:init()
         visible = config.data.show_help_on_start
     }
 
-    local nk = Nuklear
-    gui_instance = gui.Instance{
-        font_header = Fonts.default[16],
-        style = {
-            font = Fonts.monospace[14],
-            text = {
-                color = nk.colorRGBA(255, 255, 255)
-            },
-        }
-    }
+    self.gui_instance = gui.Instance{}
 
     self.input = Input()
 
@@ -361,7 +352,7 @@ function game:update(dt)
     self.help_panel:update(dt)
 
     if DEBUG then
-        gui_instance:update(dt)
+        self.gui_instance:update(dt)
     end
 
     error_occurred = false
@@ -406,6 +397,10 @@ function game:draw()
     error_region = "app_draw"
     xpcall(call_app_draw, errhand)
     love.graphics.pop()
+
+    if DEBUG then
+        self.gui_instance:draw()
+    end
 
     self.notification_queue:draw()
     self.help_panel:draw()

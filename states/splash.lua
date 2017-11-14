@@ -1,3 +1,5 @@
+local suit    = require 'libs.suit'
+
 local splash = {}
 
 local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
@@ -25,17 +27,8 @@ function splash:enter()
     self.selected_project = ""
     self.switch_to_game = false
 
-    self.font_header = Fonts.default[18]
-    self.style = {
-        font = Fonts.default[16],
-        text = {
-            color = '#eeeeee'
-        },
-    }
-
-    self.show_new_project_popup = false
-    self.new_project_name_field = {
-        value = ''
+    self.new_project_name_state = {
+        text = ''
     }
 end
 
@@ -48,59 +41,43 @@ function splash:update(dt)
         State.switch(States.game, self.selected_project)
         return
     end
-    local nk = Nuklear
-    nk.frameBegin()
-    nk.stylePush(self.style)
 
-    local w, h = 300, love.graphics.getHeight() - 300
-    nk.stylePush{font = self.font_header}
-    if nk.windowBegin('Projects', 70, 140, w, h, 'title', 'scrollbar') then
-        nk.stylePop()
-        nk.layoutRow('dynamic', 30, 1)
-        if nk.button('New project') then
-            self.show_new_project_popup = true
-        end
-        for i, project in ipairs(self.project_list) do
-            nk.layoutRow('dynamic', 25, {0.75, 0.25})
-            if nk.selectable(project, self.selected_project == project) then
-                self.selected_project = project
+    local x = 70
+    local y = 140
+    local padding_x = 10
+    local padding_y = 10
+    local row_width = love.graphics.getWidth() * 0.3
+    local row_height = love.graphics.getHeight() * 0.03
 
-                if self.selected_project and nk.button('Open') then
-                    self.switch_to_game = true
-                end
-            end
-        end
+    suit.layout:reset(x, y, padding_x, padding_y)
 
-        if self.show_new_project_popup then
-            local w, h = 300, 200
-            local x = love.graphics.getWidth()/2 - w/2
-            local y = love.graphics.getHeight()/2 - h/2
-            x, y = nk.layoutSpaceToLocal(x, y)
-            if nk.popupBegin('dynamic', 'New project', x, y, w, h, 'title', 'closable') then
-                nk.layoutRow('dynamic', 20, 1)
-                nk.label('Name')
-                nk.layoutRow('dynamic', 30, 1)
-                nk.edit('field', self.new_project_name_field)
-                nk.spacing(1)
-                if nk.button('OK') and self.new_project_name_field.value ~= '' then
-                    self:create_new_project(self.new_project_name_field.value)
-                    self.show_new_project_popup = false
-                    self.new_project_name_field.value = ''
-                    nk.popupClose()
-                    self.project_list = love.filesystem.getDirectoryItems('save/projects')
-                end
-            else
-                self.show_new_project_popup = false
-            end
-            nk.popupEnd()
+    love.graphics.setFont(Fonts.bold[24])
+    suit.layout:push(suit.layout:col(row_width, row_height))
+    suit.Label('Projects', {align = 'left'}, suit.layout:row(row_width, row_height))
+
+    for i, project in ipairs(self.project_list) do
+        love.graphics.setFont(Fonts.regular[16])
+        if suit.Button(project, {align = 'left'}, suit.layout:row()).hit then
+            self.selected_project = project
+            self.switch_to_game = true
         end
-    else
-        nk.stylePop()
     end
-    nk.windowEnd()
+    suit.layout:pop()
 
-    nk.stylePop()
-    nk.frameEnd()
+    suit.layout:push(suit.layout:col(row_width, row_height))
+    love.graphics.setFont(Fonts.bold[24])
+    suit.Label('Create new project', {align = 'left'}, suit.layout:col(row_width, row_height))
+
+    love.graphics.setFont(Fonts.regular[16])
+    suit.Input(self.new_project_name_state, {align = 'left'}, suit.layout:row())
+    if self.new_project_name_state.text ~= '' then
+        if suit.Button('Create project', {align = 'center'}, suit.layout:row()).hit then
+            self:create_new_project(self.new_project_name_state.text)
+            self.project_list = love.filesystem.getDirectoryItems('save/projects')
+            self.new_project_name_state.text = ''
+        end
+    end
+    suit.layout:pop()
 end
 
 function splash:draw()
@@ -118,6 +95,17 @@ function splash:draw()
     local version_y = title_baseline - version_font:getBaseline()
     love.graphics.setFont(version_font)
     print_with_shadow(Shaderview._VERSION, version_x, version_y)
+
+    love.graphics.setColor(255, 255, 255)
+    suit.draw()
+end
+
+function splash:keypressed(key, code, isRepeat)
+    suit.keypressed(key, code, isRepeat)
+end
+
+function splash:textinput(text)
+    suit.textinput(text)
 end
 
 return splash

@@ -1,78 +1,7 @@
 local loadTimeStart = love.timer.getTime()
 require 'globals'
 
-local tree = (...)
-local cpaths = {}
-
-local function c_loader(modname, fn_name)
-    local os = love.system.getOS()
-    if not os then
-        error("Cannot load native modules, OS not found.")
-    end
-
-    local ext  = os == 'Windows' and ".dll" or ".so"
-    local file = modname:gsub("%.", "/") .. ext
-
-    for _, elem in ipairs(cpaths) do
-        elem = elem:gsub('%?', file)
-
-        local base = nil
-        if love.filesystem.isFused() then
-            base = love.filesystem.getSourceBaseDirectory()
-            if can_open(base .. "/" ..elem) == false then
-                base = nil -- actually, file not found
-            end
-        elseif love.filesystem.exists(elem) then
-            base = love.filesystem.getRealDirectory(elem)
-        end
-
-        if base then
-            local path = base .. "/" .. elem
-            local lib, err1 = package.loadlib(path, "loveopen_"..fn_name)
-            if lib then return lib end
-
-            local err2
-            lib, err2 = package.loadlib(path, "luaopen_"..fn_name)
-            if lib then return lib end
-
-            if err1 == err2 then
-                error(err1)
-            else
-                error(err1.."\n"..err2)
-            end
-        end
-    end
-
-    error("no library '" .. file .. "' in path.")
-end
-
-local function c_load(modname)
-    return c_loader(modname, modname:gsub("%.", "_"))
-end
-
 function love.load()
-    if love.system.getOS() == "Windows" then
-        cpaths[#cpaths+1] = "/libs/nuklear/win64/?"
-        Nuklear = c_load('nuklear')()
-    elseif love.system.getOS() == "Linux" then
-        cpaths[#cpaths+1] = "/libs/nuklear/linux64/?"
-        Nuklear = c_load('nuklear')()
-    elseif love.system.getOS() == "OS X" then
-        --cpaths[#cpaths+1] = "/libs/nuklear/osx64/?"
-        --Nuklear = c_load('nuklear')
-        error([[
-OS X binaries for the love-nuklear GUI are currently not included. If you are
-willing, please open an issue to help build the binaries.
-    ]])
-    else
-        error(([[
-Your operating system is currently not supported. Please open an issue with the
-issue tracker and include your OS and device info.
-
-OS: %s
-    ]]):format(love.system.getOS()))
-    end
-
     local save_paths = {
         'save',
         'save/screenshots',
@@ -114,8 +43,6 @@ OS: %s
     State.registerEvents(callbacks)
     State.switch(States.splash)
 
-    Nuklear.init()
-
     if DEBUG then
         local loadTimeEnd = love.timer.getTime()
         local loadTime = (loadTimeEnd - loadTimeStart)
@@ -138,39 +65,36 @@ function love.draw()
     State.current():draw()
     local draw_time_end = love.timer.getTime()
     local draw_time = draw_time_end - draw_time_start
-
-    Nuklear.draw()
 end
 
 function love.keypressed(key, code, isRepeat)
-    Nuklear.keypressed(key, code, isRepeat)
     if not RELEASE and code == CONFIG.debug.key then
         DEBUG = not DEBUG
     end
 end
 
 function love.keyreleased(key, code)
-    Nuklear.keyreleased(key, code)
+
 end
 
 function love.mousepressed(x, y, button, istouch)
-    Nuklear.mousepressed(x, y, button, istouch)
+
 end
 
 function love.mousereleased(x, y, button, istouch)
-    Nuklear.mousereleased(x, y, button, istouch)
+
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    Nuklear.mousemoved(x, y, dx, dy, istouch)
+
 end
 
 function love.textinput(text)
-    Nuklear.textinput(text)
+
 end
 
 function love.wheelmoved(x, y)
-    Nuklear.wheelmoved(x, y)
+
 end
 
 function love.threaderror(thread, errorMessage)
@@ -178,7 +102,6 @@ function love.threaderror(thread, errorMessage)
 end
 
 function love.quit()
-    Nuklear.shutdown()
     for name, thread in pairs(Threads) do
         if thread:isRunning() then
             local channel = love.thread.getChannel('channel_' .. name .. '_quit')
