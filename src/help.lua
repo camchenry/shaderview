@@ -24,7 +24,7 @@ help.Panel = Class{
     init = function(self, props)
         self.padding = love.graphics.getWidth() * 0.05
         self.visible = true
-        self.visible_toggle_key = 'f1'
+        self.visible_toggle_key = 'escape'
         props = props or {}
         for k, v in pairs(props) do
             self[k] = v
