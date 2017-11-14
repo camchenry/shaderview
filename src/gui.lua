@@ -92,7 +92,7 @@ function gui.Instance:init(props)
     self.padding_y = 5
     self.width = love.graphics.getWidth()
     self.height = love.graphics.getHeight() * 0.3
-    self.row_width = self.width
+    self.row_width = 200
     self.row_height = 15
 
     if props then
@@ -113,8 +113,8 @@ function gui.Instance:draw()
     local padding_y = self.padding_y
     local row_width = self.row_width
     local row_height = self.row_height
-    local w = row_width
-    local h = (row_height + padding_y) * 9
+    local w = self.width
+    local h = (row_height + padding_y) * 5
 
     love.graphics.setColor(0, 0, 0, 128)
     love.graphics.rectangle('fill', x - padding_x, y - padding_y, w + padding_x * 2, h + padding_y * 2)
@@ -144,13 +144,23 @@ function gui.Instance:draw_performance()
     info[4] = ("VRAM: %.2f%s"):format(vram, unit)
     info[5] = "Draws: " .. stats.drawcalls
     info[6] = "Canvases: " .. stats.canvases
-    info[7] = "Switches: " .. stats.canvasswitches
+    info[7] = "Canvas switches: " .. stats.canvasswitches
     info[8] = "Images: " .. stats.images
     info[9] = "Shader switches: " .. stats.shaderswitches
 
-    for i, v in ipairs(info) do
-        suit:Label(v, {align = 'left'}, suit.layout:row(row_width, row_height))
+    suit.layout:push(suit.layout:col(row_width, row_height))
+    for i=1, 5 do
+        local text = info[i]
+        suit:Label(text, {align = 'left'}, suit.layout:row(row_width, row_height))
     end
+    suit.layout:pop()
+
+    suit.layout:push(suit.layout:col(row_width, row_height))
+    for i=6, 9 do
+        local text = info[i]
+        suit:Label(text, {align = 'left'}, suit.layout:row(row_width, row_height))
+    end
+    suit.layout:pop()
 end
 
 return gui

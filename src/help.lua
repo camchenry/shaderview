@@ -88,10 +88,11 @@ help.Panel = Class{
             print_with_shadow('Project: ' .. Active_Project.name, x, y)
             y = y + regular_font:getHeight()
 
-            local text_width = regular_font:getWidth('Save directory: ')
-            print_with_shadow('Save directory: ', x, y)
+            local text = 'Save directory: '
+            local text_width = regular_font:getWidth(text)
+            print_with_shadow(text, x, y)
             love.graphics.setFont(monospace_font)
-            print_with_shadow(self.save_directory, x + text_width, y)
+            print_with_shadow(self.save_directory .. '/' .. Active_Project.name, x + text_width, y)
             y = y + 20
 
             for key, description in pairs(Keybinds) do
