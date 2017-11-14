@@ -30,7 +30,7 @@ CONFIG = {
         -- The key (scancode) that will toggle the debug state.
         -- Scancodes are independent of keyboard layout so it will always be in the same
         -- position on the keyboard. The positions are based on an American layout.
-        key = 'f2',
+        key = '`',
 
         stats = {
             font            = nil, -- set after fonts are created
