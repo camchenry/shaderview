@@ -125,16 +125,31 @@ end
 function gui.Instance:update(dt)
     suit.layout:reset(self.x, self.y, self.padding_x, self.padding_y)
 
+    local tabs = {
+        {
+            id = 'general',
+            label = 'General',
+        },
+        {
+            id = 'performance',
+            label = 'Performance',
+        },
+        {
+            id = 'textures',
+            label = 'Textures',
+        },
+    }
+
     suit.layout:push(self.main_layout:cell(1))
-    love.graphics.setFont(Fonts.regular[16])
-    if suit:Button('General', {align = 'left'}, suit.layout:col(125, self.top_row_height)).hit then
-        self.current_tab = 'general'
-    end
-    if suit:Button('Performance', {align = 'left'}, suit.layout:col()).hit then
-        self.current_tab = 'performance'
-    end
-    if suit:Button('Textures', {align = 'left'}, suit.layout:col()).hit then
-        self.current_tab = 'textures'
+    for i, tab in ipairs(tabs) do
+        if self.current_tab == tab.id then
+            love.graphics.setFont(Fonts.bold[16])
+        else
+            love.graphics.setFont(Fonts.regular[16])
+        end
+        if suit:Button(tab.label, {align = 'left'}, suit.layout:col(115, self.top_row_height)).hit then
+            self.current_tab = tab.id
+        end
     end
     suit.layout:pop()
 
