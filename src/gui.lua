@@ -94,6 +94,25 @@ function gui.Instance:init(props)
     self.height = love.graphics.getHeight() * 0.3
     self.row_width = 200
     self.row_height = 15
+    self.top_row_width = 200
+    self.top_row_height = 30
+    self.main_layout = suit.layout:rows{
+        pos = {self.x, self.y},
+        padding = {self.padding_x, self.padding_y},
+        min_height = self.height,
+        min_width = self.width,
+
+        {self.width, self.top_row_height},
+        {'fill', 'fill'},
+    }
+    self.tab_layout = suit.layout:cols{
+        pos = {self.main_layout.cell(2)},
+        padding = {self.padding_x, self.padding_y},
+        min_height = self.height,
+
+        {'fill', self.height},
+    }
+    self.current_tab = 'general'
 
     if props then
         for k, v in pairs(props) do
@@ -103,7 +122,28 @@ function gui.Instance:init(props)
 end
 
 function gui.Instance:update(dt)
-    self:draw_performance()
+    suit.layout:reset(self.x, self.y, self.padding_x, self.padding_y)
+
+    suit.layout:push(self.main_layout:cell(1))
+    love.graphics.setFont(Fonts.regular[16])
+    if suit:Button('General', {align = 'left'}, suit.layout:col(125, self.top_row_height)).hit then
+        self.current_tab = 'general'
+    end
+    if suit:Button('Performance', {align = 'left'}, suit.layout:col()).hit then
+        self.current_tab = 'performance'
+    end
+    if suit:Button('Textures', {align = 'left'}, suit.layout:col()).hit then
+        self.current_tab = 'textures'
+    end
+    suit.layout:pop()
+
+    if self.current_tab == 'general' then
+        -- @TODO
+    elseif self.current_tab == 'performance' then
+        self:draw_performance()
+    elseif self.current_tab == 'textures' then
+        self:draw_textures()
+    end
 end
 
 function gui.Instance:draw()
@@ -113,15 +153,46 @@ function gui.Instance:draw()
     local padding_y = self.padding_y
     local row_width = self.row_width
     local row_height = self.row_height
-    local w = self.width
-    local h = (row_height + padding_y) * 5
+    local w, h = self.tab_layout.size()
+    w = self.width
 
+    local x = x - padding_x
+    local y = y - padding_y
+    local w = w + padding_x * 2
+    local h = h + padding_y * 2
     love.graphics.setColor(0, 0, 0, 128)
-    love.graphics.rectangle('fill', x - padding_x, y - padding_y, w + padding_x * 2, h + padding_y * 2)
+    love.graphics.rectangle('fill', x, y, w, h)
     suit:draw()
 end
 
-local info = {}
+function gui.Instance:draw_textures()
+    love.graphics.setFont(Fonts.monospace[15])
+
+    self.tab_layout = suit.layout:cols{
+        pos = {self.main_layout.cell(2)},
+        padding = {self.padding_x, self.padding_y},
+        min_width = self.width,
+        min_height = self.height,
+
+        {self.width, self.height}
+    }
+
+    suit.layout:push(self.tab_layout.cell(1))
+    if Lume.count(textures) == 0 then
+        suit:Label('No textures loaded.', {align = 'left'}, suit.layout:row(self.row_width, self.row_height))
+    else
+        for name, texture in pairs(textures) do
+            local w, h = texture:getDimensions()
+            local filter = texture:getFilter()
+            local wrap_x, wrap_y = texture:getWrap()
+            local text = ("%s (%dx%d), filter: '%s', wrap_x: '%s', wrap_y: '%s'"):format(name, w, h, filter, wrap_x, wrap_y)
+            suit:Label(text, {align = 'left'}, suit.layout:row(self.width, self.row_height))
+        end
+    end
+    suit.layout:pop()
+end
+
+
 function gui.Instance:draw_performance()
     local x = self.x
     local y = self.y
@@ -135,27 +206,38 @@ function gui.Instance:draw_performance()
     local ram = collectgarbage("count") / 1024
     local vram = stats.texturememory / 1024 / 1024
 
-    suit.layout:reset(x, y, padding_x, padding_y)
     love.graphics.setFont(Fonts.monospace[15])
 
-    info[1] = "FPS: " .. ("%3d"):format(love.timer.getFPS())
-    info[2] = ("Delta: %.3fms"):format(love.timer.getAverageDelta() * 1000)
-    info[3] = ("RAM: %.2f%s"):format(ram, unit)
-    info[4] = ("VRAM: %.2f%s"):format(vram, unit)
-    info[5] = "Draws: " .. stats.drawcalls
-    info[6] = "Canvases: " .. stats.canvases
-    info[7] = "Canvas switches: " .. stats.canvasswitches
-    info[8] = "Images: " .. stats.images
-    info[9] = "Shader switches: " .. stats.shaderswitches
+    local info = {
+        "FPS: " .. ("%3d"):format(love.timer.getFPS()),
+        ("Delta: %.3fms"):format(love.timer.getAverageDelta() * 1000),
+        ("RAM: %.2f%s"):format(ram, unit),
+        ("VRAM: %.2f%s"):format(vram, unit),
+        "Draws: " .. stats.drawcalls,
+        "Canvases: " .. stats.canvases,
+        "Canvas switches: " .. stats.canvasswitches,
+        "Images: " .. stats.images,
+        "Shader switches: " .. stats.shaderswitches,
+    }
 
-    suit.layout:push(suit.layout:col(row_width, row_height))
+    self.tab_layout = suit.layout:cols{
+        pos = {self.main_layout.cell(2)},
+        padding = {padding_x, padding_y},
+        min_width = self.width,
+        min_height = self.height,
+
+        {self.row_width, self.height},
+        {self.row_width},
+    }
+
+    suit.layout:push(self.tab_layout.cell(1))
     for i=1, 5 do
         local text = info[i]
         suit:Label(text, {align = 'left'}, suit.layout:row(row_width, row_height))
     end
     suit.layout:pop()
 
-    suit.layout:push(suit.layout:col(row_width, row_height))
+    suit.layout:push(self.tab_layout.cell(2))
     for i=6, 9 do
         local text = info[i]
         suit:Label(text, {align = 'left'}, suit.layout:row(row_width, row_height))
