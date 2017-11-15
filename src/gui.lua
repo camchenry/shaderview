@@ -113,6 +113,7 @@ function gui.Instance:init(props)
         {'fill', self.height},
     }
     self.current_tab = 'general'
+    self.textures_to_draw = {}
 
     if props then
         for k, v in pairs(props) do
@@ -163,10 +164,20 @@ function gui.Instance:draw()
     love.graphics.setColor(0, 0, 0, 128)
     love.graphics.rectangle('fill', x, y, w, h)
     suit:draw()
+
+    for i, data in ipairs(self.textures_to_draw) do
+        love.graphics.push()
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.draw(data.texture, data.x, data.y, data.rotation, data.scale_x, data.scale_y)
+        love.graphics.pop()
+    end
+    self.textures_to_draw = {}
 end
 
 function gui.Instance:draw_textures()
     love.graphics.setFont(Fonts.monospace[15])
+
+    local row_width = self.width / 5
 
     self.tab_layout = suit.layout:cols{
         pos = {self.main_layout.cell(2)},
@@ -174,22 +185,54 @@ function gui.Instance:draw_textures()
         min_width = self.width,
         min_height = self.height,
 
-        {self.width, self.height}
+        {row_width, self.height},
+        {row_width, self.height},
+        {row_width, self.height},
+        {row_width, self.height},
+        {row_width, self.height},
     }
 
-    suit.layout:push(self.tab_layout.cell(1))
-    if Lume.count(textures) == 0 then
-        suit:Label('No textures loaded.', {align = 'left'}, suit.layout:row(self.row_width, self.row_height))
-    else
-        for name, texture in pairs(textures) do
-            local w, h = texture:getDimensions()
-            local filter = texture:getFilter()
-            local wrap_x, wrap_y = texture:getWrap()
-            local text = ("%s (%dx%d), filter: '%s', wrap_x: '%s', wrap_y: '%s'"):format(name, w, h, filter, wrap_x, wrap_y)
-            suit:Label(text, {align = 'left'}, suit.layout:row(self.width, self.row_height))
+    local num_textures = Lume.count(textures)
+    local i = 0
+    for name, texture in pairs(textures) do
+        i = i + 1
+        suit.layout:push(self.tab_layout.cell(i))
+        local _, _, cell_w, cell_h = self.tab_layout.cell(i)
+        local texture_w, texture_h = texture:getDimensions()
+        local thumbnail_height = cell_h - self.row_height * 10
+        local thumbnail_x, thumbnail_y, _w, _h = suit.layout:row(row_width, thumbnail_height)
+        local thumbnail_width = thumbnail_height
+        table.insert(self.textures_to_draw, {
+            texture = textures[name],
+            x = thumbnail_x,
+            y = thumbnail_y,
+            rotation = 0,
+            scale_x = thumbnail_width / texture_w,
+            scale_y = thumbnail_height / texture_h,
+        })
+
+        local filter = texture:getFilter()
+        local wrap_x, wrap_y = texture:getWrap()
+        suit:Label(name, {align = 'left'}, suit.layout:row(row_width, self.row_height))
+        local size_text = ("%d x %d"):format(texture_w, texture_h)
+        suit:Label(size_text, {align = 'left'}, suit.layout:row(row_width, self.row_height))
+        local filter_text = ("filter: '%s'"):format(filter)
+        suit:Label(filter_text, {align = 'left'}, suit.layout:row(row_width, self.row_height))
+        local wrap_text_x = ("wrap_x: '%s'"):format(wrap_x)
+        local wrap_text_y = ("wrap_y: '%s'"):format(wrap_y)
+        suit:Label(wrap_text_x, {align = 'left'}, suit.layout:row(row_width, self.row_height))
+        suit:Label(wrap_text_y, {align = 'left'}, suit.layout:row(row_width, self.row_height))
+        if i >= 5 then
+            break
         end
+
+        suit.layout:pop()
     end
-    suit.layout:pop()
+    if num_textures == 0 then
+        suit.layout:push(self.tab_layout.cell(1))
+        suit:Label('No textures loaded.', {align = 'left'}, suit.layout:row(self.row_width, self.row_height))
+        suit.layout:pop()
+    end
 end
 
 
