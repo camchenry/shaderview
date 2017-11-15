@@ -24,17 +24,6 @@ theme.color = {
         shadow = {33, 33, 33},
     }
 }
-function theme.Button(text, opt, x,y,w,h)
-    local c = theme.getColorForState(opt)
-
-    theme.drawBox(x,y,w,h, c, opt.cornerRadius)
-
-    love.graphics.setColor(c.fg)
-    love.graphics.setFont(opt.font)
-
-    y = y + theme.getVerticalOffsetForAlign(opt.valign, opt.font, h)
-    love.graphics.printf(text, x+2, y, w-4, opt.align or "center")
-end
 function theme.Label(text, opt, x,y,w,h)
     y = y + theme.getVerticalOffsetForAlign(opt.valign, opt.font, h)
 
@@ -61,7 +50,27 @@ end
 function theme.Button(text, opt, x,y,w,h)
     local c = theme.getColorForState(opt)
 
+    x = math.floor(x + 0.5)
+    y = math.floor(y + 0.5)
+
     theme.drawBox(x,y,w,h, c, opt.cornerRadius)
+
+    if opt.border then
+        love.graphics.push()
+        if opt.border.right then
+            love.graphics.setColor(opt.border.right.color or {})
+            love.graphics.setLineWidth(opt.border.right.width or 1)
+            love.graphics.setLineStyle('rough')
+            love.graphics.line(x + w - 1, y, x + w, y + h - 1)
+        end
+        if opt.border.left then
+            love.graphics.setColor(opt.border.left.color or {})
+            love.graphics.setLineWidth(opt.border.left.width or 1)
+            love.graphics.setLineStyle('rough')
+            love.graphics.line(x + 1, y, x + 1, y + h - 1)
+        end
+        love.graphics.pop()
+    end
 
     y = y + theme.getVerticalOffsetForAlign(opt.valign, opt.font, h)
 
@@ -74,11 +83,12 @@ function theme.Button(text, opt, x,y,w,h)
     end
     love.graphics.setColor(r, g, b, a)
     love.graphics.setFont(opt.font)
-    love.graphics.printf(text, x+2+shadowX, y+shadowY, w-4, opt.align or "center")
+    local inner_padding_x = 4
+    love.graphics.printf(text, x+inner_padding_x+shadowX, y+shadowY, w - inner_padding_x*2, opt.align or "center")
 
     love.graphics.setColor(c.fg)
     love.graphics.setFont(opt.font)
-    love.graphics.printf(text, x+2, y, w-4, opt.align or "center")
+    love.graphics.printf(text, x+inner_padding_x, y, w - inner_padding_x*2, opt.align or "center")
 end
 
 local gui = {}
@@ -86,9 +96,9 @@ local gui = {}
 gui.Instance = Class{}
 
 function gui.Instance:init(props)
-    self.x = 5
-    self.y = 5
-    self.padding_x = 10
+    self.x = 0
+    self.y = 0
+    self.padding_x = 8
     self.padding_y = 5
     self.width = love.graphics.getWidth()
     self.height = love.graphics.getHeight() * 0.3
@@ -96,9 +106,11 @@ function gui.Instance:init(props)
     self.row_height = 15
     self.top_row_width = 200
     self.top_row_height = 30
+    self.top_row_padding_x = 0
+    self.top_row_padding_y = 10
     self.main_layout = suit.layout:rows{
         pos = {self.x, self.y},
-        padding = {self.padding_x, self.padding_y},
+        padding = {self.top_row_padding_x, self.top_row_padding_y},
         min_height = self.height,
         min_width = self.width,
 
@@ -122,6 +134,20 @@ function gui.Instance:init(props)
     end
 end
 
+function gui.Instance:resize(new_width, new_height)
+    self.width = new_width
+    self.height = new_height * 0.3
+    self.main_layout = suit.layout:rows{
+        pos = {self.x, self.y},
+        padding = {self.padding_x, self.padding_y * 2},
+        min_height = self.height,
+        min_width = self.width,
+
+        {self.width, self.top_row_height},
+        {'fill', 'fill'},
+    }
+end
+
 function gui.Instance:update(dt)
     suit.layout:reset(self.x, self.y, self.padding_x, self.padding_y)
 
@@ -141,13 +167,29 @@ function gui.Instance:update(dt)
     }
 
     suit.layout:push(self.main_layout:cell(1))
+    suit.layout:padding(0, 0)
     for i, tab in ipairs(tabs) do
         if self.current_tab == tab.id then
             love.graphics.setFont(Fonts.bold[18])
         else
             love.graphics.setFont(Fonts.regular[18])
         end
-        if suit:Button(tab.label, {align = 'left'}, suit.layout:col(130, self.top_row_height)).hit then
+        local opt = {
+            align = 'left',
+            border = {
+                left = {
+                    color = {255, 255, 255, 48},
+                    width = 1,
+                },
+                right = {
+                    color = {0, 0, 0, 64},
+                    width = 1,
+                },
+            }
+        }
+        if i == 1 then opt.border.left = nil end
+        if i == #tabs then opt.border.right = nil end
+        if suit:Button(tab.label, opt, suit.layout:col(self.top_row_width, self.top_row_height + self.top_row_padding_y / 2)).hit then
             self.current_tab = tab.id
         end
     end
@@ -163,20 +205,21 @@ function gui.Instance:update(dt)
 end
 
 function gui.Instance:draw()
-    local x = self.x
-    local y = self.y
+    local _, _, cell_width, cell_height = self.main_layout.cell(2)
     local padding_x = self.padding_x
     local padding_y = self.padding_y
-    local row_width = self.row_width
-    local row_height = self.row_height
-    local w, h = self.tab_layout.size()
-    w = self.width
-
-    local x = x - padding_x
-    local y = y - padding_y
-    local w = w + padding_x * 2
-    local h = h + padding_y * 2
+    local x = self.x - padding_x
+    local y = self.y - padding_y
+    local w = cell_width + padding_x * 2
+    local h = cell_height + padding_y * 2
     love.graphics.setColor(0, 0, 0, 128)
+    love.graphics.rectangle('fill', x, y, w, h)
+
+    local x = x
+    local y = y
+    local w = self.width          + self.padding_x * 2
+    local h = self.top_row_height + self.padding_y * 2
+    love.graphics.setColor(0, 0, 0, 180)
     love.graphics.rectangle('fill', x, y, w, h)
     suit:draw()
 

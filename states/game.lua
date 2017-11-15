@@ -356,6 +356,15 @@ function game:enter(prev, project)
     self:load_project(project)
 end
 
+function game:resize(...)
+    error_region = "app_resize"
+    if app then
+        xpcall(app.resize, errhand, app, ...)
+    end
+
+    self.gui_instance:resize(...)
+end
+
 local function call_app_update(dt)
     if app then
         app:update(dt)
