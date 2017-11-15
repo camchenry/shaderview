@@ -143,11 +143,11 @@ function gui.Instance:update(dt)
     suit.layout:push(self.main_layout:cell(1))
     for i, tab in ipairs(tabs) do
         if self.current_tab == tab.id then
-            love.graphics.setFont(Fonts.bold[16])
+            love.graphics.setFont(Fonts.bold[18])
         else
-            love.graphics.setFont(Fonts.regular[16])
+            love.graphics.setFont(Fonts.regular[18])
         end
-        if suit:Button(tab.label, {align = 'left'}, suit.layout:col(115, self.top_row_height)).hit then
+        if suit:Button(tab.label, {align = 'left'}, suit.layout:col(130, self.top_row_height)).hit then
             self.current_tab = tab.id
         end
     end
@@ -190,7 +190,7 @@ function gui.Instance:draw()
 end
 
 function gui.Instance:draw_textures()
-    love.graphics.setFont(Fonts.monospace[15])
+    love.graphics.setFont(Fonts.monospace[16])
 
     local row_width = self.width / 5
 
@@ -264,7 +264,7 @@ function gui.Instance:draw_performance()
     local ram = collectgarbage("count") / 1024
     local vram = stats.texturememory / 1024 / 1024
 
-    love.graphics.setFont(Fonts.monospace[15])
+    love.graphics.setFont(Fonts.monospace[16])
 
     local info = {
         "FPS: " .. ("%3d"):format(love.timer.getFPS()),
