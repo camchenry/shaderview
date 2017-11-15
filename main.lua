@@ -47,16 +47,10 @@ function love.load()
         local loadTimeEnd = love.timer.getTime()
         local loadTime = (loadTimeEnd - loadTimeStart)
         print(("Loaded in %.3f seconds."):format(loadTime))
-        if Lovebird then
-            Lovebird.print(("Loaded in %.3f seconds."):format(loadTime))
-        end
     end
 end
 
 function love.update(dt)
-    if DEBUG and Lovebird then
-        Lovebird.update()
-    end
     Timer.update(dt)
 end
 
