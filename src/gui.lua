@@ -230,7 +230,7 @@ function gui.Instance:update(dt)
     suit.layout:pop()
 
     if self.current_tab == 'general' then
-        -- @TODO
+        self:draw_general()
     elseif self.current_tab == 'performance' then
         self:draw_performance()
     elseif self.current_tab == 'textures' then
@@ -266,10 +266,54 @@ function gui.Instance:draw()
     self.textures_to_draw = {}
 end
 
+function gui.Instance:draw_general()
+    local x = self.x
+    local y = self.y
+    local padding_x = self.padding_x
+    local padding_y = self.padding_y
+    local row_width = self.row_width
+    local row_height = self.row_height
+
+    local stats = love.graphics.getStats()
+    local unit = "MB"
+    local ram = collectgarbage("count") / 1024
+    local vram = stats.texturememory / 1024 / 1024
+
+    love.graphics.setFont(Fonts.monospace[16])
+
+    local save_directory = love.filesystem.getSaveDirectory() .. '/save/projects/' .. Active_Project.name
+
+    local info = {
+        "Project: " .. Active_Project.name,
+        "Save directory: " .. save_directory
+    }
+
+    local x, y = self.main_layout.cell(2)
+    self.tab_layout = suit.layout:cols{
+        pos = {x + 5, y + 5},
+        padding = {padding_x, padding_y},
+        min_width = self.width,
+        min_height = self.height,
+
+        {self.width, self.height}
+    }
+
+    suit.layout:push(self.tab_layout.cell(1))
+    for i, text in ipairs(info) do
+        suit:Label(text, {align = 'left'}, suit.layout:row(self.width, row_height))
+    end
+
+    if suit:Button('Open in file explorer', {align = 'left', font = Fonts.regular[16]}, suit.layout:row(200, 30)).hit then
+        love.system.openURL('file://' .. save_directory)
+    end
+
+    suit.layout:pop()
+end
+
 function gui.Instance:draw_textures()
     love.graphics.setFont(Fonts.monospace[16])
 
-    local row_width = self.width / 6
+    local row_width = self.width / 6 - 10
 
     local x, y = self.main_layout.cell(2)
     self.tab_layout = suit.layout:cols{
@@ -300,7 +344,7 @@ function gui.Instance:draw_textures()
         thumbnail_width = math.min(row_width, thumbnail_width)
         table.insert(self.textures_to_draw, {
             texture = textures[name],
-            x = thumbnail_x,
+            x = thumbnail_x + (row_width - thumbnail_width)/2,
             y = thumbnail_y,
             rotation = 0,
             scale_x = thumbnail_width / texture_w,
