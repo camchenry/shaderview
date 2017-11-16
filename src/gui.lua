@@ -59,15 +59,31 @@ function theme.Button(text, opt, x,y,w,h)
         love.graphics.push()
         if opt.border.right then
             love.graphics.setColor(opt.border.right.color or {})
-            love.graphics.setLineWidth(opt.border.right.width or 1)
-            love.graphics.setLineStyle('rough')
-            love.graphics.line(x + w - 1, y, x + w, y + h - 1)
+            local width = opt.border.right.width or 1
+            love.graphics.setLineWidth(width)
+            love.graphics.setLineStyle(opt.border.right.style or 'rough')
+            love.graphics.line(x + w, y, x + w, y + h)
         end
         if opt.border.left then
             love.graphics.setColor(opt.border.left.color or {})
-            love.graphics.setLineWidth(opt.border.left.width or 1)
-            love.graphics.setLineStyle('rough')
-            love.graphics.line(x + 1, y, x + 1, y + h - 1)
+            local width = opt.border.left.width or 1
+            love.graphics.setLineWidth(width)
+            love.graphics.setLineStyle(opt.border.left.style or 'rough')
+            love.graphics.line(x + width, y, x + width/2, y + h)
+        end
+        if opt.border.bottom then
+            love.graphics.setColor(opt.border.bottom.color or {})
+            local width = opt.border.bottom.width or 1
+            love.graphics.setLineWidth(width)
+            love.graphics.setLineStyle(opt.border.bottom.style or 'rough')
+            love.graphics.line(x, y + h - width / 2, x + w, y + h - width / 2)
+        end
+        if opt.border.top then
+            love.graphics.setColor(opt.border.top.color or {})
+            local width = opt.border.top.width or 1
+            love.graphics.setLineWidth(width)
+            love.graphics.setLineStyle(opt.border.top.style or 'rough')
+            love.graphics.line(x, y + width / 2, x + w, y + width / 2)
         end
         love.graphics.pop()
     end
@@ -83,7 +99,7 @@ function theme.Button(text, opt, x,y,w,h)
     end
     love.graphics.setColor(r, g, b, a)
     love.graphics.setFont(opt.font)
-    local inner_padding_x = 4
+    local inner_padding_x = opt.padding_x or 4
     love.graphics.printf(text, x+inner_padding_x+shadowX, y+shadowY, w - inner_padding_x*2, opt.align or "center")
 
     love.graphics.setColor(c.fg)
@@ -98,7 +114,7 @@ gui.Instance = Class{}
 function gui.Instance:init(props)
     self.x = 0
     self.y = 0
-    self.padding_x = 8
+    self.padding_x = 10
     self.padding_y = 5
     self.width = love.graphics.getWidth()
     self.height = love.graphics.getHeight() * 0.3
@@ -169,26 +185,44 @@ function gui.Instance:update(dt)
     suit.layout:push(self.main_layout:cell(1))
     suit.layout:padding(0, 0)
     for i, tab in ipairs(tabs) do
-        if self.current_tab == tab.id then
-            love.graphics.setFont(Fonts.bold[18])
-        else
-            love.graphics.setFont(Fonts.regular[18])
-        end
         local opt = {
             align = 'left',
+            padding_x = 10,
             border = {
                 left = {
-                    color = {255, 255, 255, 48},
+                    color = {255, 255, 255, 64},
                     width = 1,
                 },
                 right = {
-                    color = {0, 0, 0, 64},
+                    color = {0, 0, 0, 96},
+                    width = 1,
+                },
+                bottom = {
+                    color = {0, 0, 0, 128},
+                    width = 2,
+                },
+                top = {
+                    color = {255, 255, 255, 64},
                     width = 1,
                 },
             }
         }
+        if self.current_tab == tab.id then
+            opt.font = Fonts.bold[18]
+
+            local top_color = Lume.clone(opt.border.top.color)
+            opt.border.top.color = opt.border.bottom.color
+            opt.border.left.color = opt.border.bottom.color
+            opt.border.bottom.color = top_color
+            opt.border.bottom.width = 0
+        else
+            opt.font = Fonts.regular[18]
+        end
+
+        -- Hide borders on far left and right tabs
         if i == 1 then opt.border.left = nil end
         if i == #tabs then opt.border.right = nil end
+
         if suit:Button(tab.label, opt, suit.layout:col(self.top_row_width, self.top_row_height + self.top_row_padding_y / 2)).hit then
             self.current_tab = tab.id
         end
@@ -235,14 +269,16 @@ end
 function gui.Instance:draw_textures()
     love.graphics.setFont(Fonts.monospace[16])
 
-    local row_width = self.width / 5
+    local row_width = self.width / 6
 
+    local x, y = self.main_layout.cell(2)
     self.tab_layout = suit.layout:cols{
-        pos = {self.main_layout.cell(2)},
+        pos = {x + 5, y + 5},
         padding = {self.padding_x, self.padding_y},
         min_width = self.width,
         min_height = self.height,
 
+        {row_width, self.height},
         {row_width, self.height},
         {row_width, self.height},
         {row_width, self.height},
@@ -253,13 +289,15 @@ function gui.Instance:draw_textures()
     local num_textures = Lume.count(textures)
     local i = 0
     for name, texture in pairs(textures) do
-        i = i + 1
-        suit.layout:push(self.tab_layout.cell(i))
+        i = i + 2
+        suit.layout:push(self.tab_layout.cell(i - 1))
         local _, _, cell_w, cell_h = self.tab_layout.cell(i)
         local texture_w, texture_h = texture:getDimensions()
-        local thumbnail_height = cell_h - self.row_height * 10
-        local thumbnail_x, thumbnail_y, _w, _h = suit.layout:row(row_width, thumbnail_height)
-        local thumbnail_width = thumbnail_height
+        local aspect_ratio = texture_w / texture_h
+        local thumbnail_height = cell_h - self.top_row_height - 60
+        local thumbnail_x, thumbnail_y = suit.layout:row(self.row_width, thumbnail_height)
+        local thumbnail_width = thumbnail_height * aspect_ratio
+        thumbnail_width = math.min(row_width, thumbnail_width)
         table.insert(self.textures_to_draw, {
             texture = textures[name],
             x = thumbnail_x,
@@ -268,9 +306,9 @@ function gui.Instance:draw_textures()
             scale_x = thumbnail_width / texture_w,
             scale_y = thumbnail_height / texture_h,
         })
-
         local filter = texture:getFilter()
         local wrap_x, wrap_y = texture:getWrap()
+        suit.layout:push(self.tab_layout.cell(i))
         suit:Label(name, {align = 'left'}, suit.layout:row(row_width, self.row_height))
         local size_text = ("%d x %d"):format(texture_w, texture_h)
         suit:Label(size_text, {align = 'left'}, suit.layout:row(row_width, self.row_height))
@@ -321,8 +359,9 @@ function gui.Instance:draw_performance()
         "Shader switches: " .. stats.shaderswitches,
     }
 
+    local x, y = self.main_layout.cell(2)
     self.tab_layout = suit.layout:cols{
-        pos = {self.main_layout.cell(2)},
+        pos = {x + 5, y + 5},
         padding = {padding_x, padding_y},
         min_width = self.width,
         min_height = self.height,
