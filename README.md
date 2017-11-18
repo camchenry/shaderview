@@ -31,7 +31,7 @@ The `app/main.lua` file is the core of your application, where you can send vari
 The `shaders/` directory is where you place all of your shader files. Shaders inside of this directory will be loaded into a global table called `shaders` where the key is the name of the file (without the extension) and the value is the created Shader. For example, `shaders/my_shader.frag` becomes `shaders.my_shader` or `shaders['my_shader']`. Whenever you change a shader, it will be reloaded automatically.
 
 ### Textures
-The `textures/` directory is where you place all of your textures. Textures in this directory will be loaded into a global table called `textures` where the key is the name of the file (without the extension) and the value is the created ![Image](https://love2d.org/wiki/Image). For example, `textures/my_texture.png` becomes `textures.my_texture` or `textures['my_texture']`. Whenever you change a texture, it will be reloaded automatically.
+The `textures/` directory is where you place all of your textures. Textures in this directory will be loaded into a global table called `textures` where the key is the name of the file (without the extension) and the value is the created [Image](https://love2d.org/wiki/Image). For example, `textures/my_texture.png` becomes `textures.my_texture` or `textures['my_texture']`. Whenever you change a texture, it will be reloaded automatically.
 
 ## Configuration
 
