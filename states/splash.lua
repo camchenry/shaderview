@@ -47,7 +47,7 @@ function splash:update(dt)
     local padding_x = 10
     local padding_y = 10
     local row_width = love.graphics.getWidth() * 0.3
-    local row_height = love.graphics.getHeight() * 0.03
+    local row_height = love.graphics.getHeight() * 0.04
 
     suit.layout:reset(x, y, padding_x, padding_y)
 
@@ -69,7 +69,13 @@ function splash:update(dt)
     suit:Label('Create new project', {align = 'left'}, suit.layout:col(row_width, row_height))
 
     love.graphics.setFont(Fonts.regular[16])
-    suit:Input(self.new_project_name_state, {align = 'left'}, suit.layout:row())
+    local opt = {
+        align = 'left',
+        placeholder = {
+            text = 'Project name',
+        }
+    }
+    suit:Input(self.new_project_name_state, opt, suit.layout:row())
     if self.new_project_name_state.text ~= '' then
         if suit:Button('Create project', {align = 'center', cornerRadius = 6}, suit.layout:row()).hit then
             self:create_new_project(self.new_project_name_state.text)

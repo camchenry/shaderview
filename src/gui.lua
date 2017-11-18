@@ -21,6 +21,12 @@ theme.button = {
         },
     }
 }
+theme.input = {
+    placeholder = {
+        text = '',
+        color = {255, 255, 255, 100},
+    }
+}
 theme.color = {
     normal = {
         bg = {66, 66, 66},
@@ -123,6 +129,54 @@ function theme.Button(text, opt, x,y,w,h)
     love.graphics.setColor(c.fg)
     love.graphics.setFont(opt.font)
     love.graphics.printf(text, x+padx, y, w - padx*2, opt.align or "center")
+end
+function theme.Input(input, opt, x,y,w,h)
+	local utf8 = require 'utf8'
+	theme.drawBox(x,y,w,h, (opt.color and opt.color.normal) or theme.color.normal, opt.cornerRadius)
+	x = x + 3
+	w = w - 6
+
+	local th = opt.font:getHeight()
+
+	-- set scissors
+	local sx, sy, sw, sh = love.graphics.getScissor()
+	love.graphics.setScissor(x-1,y,w+2,h)
+	x = x - input.text_draw_offset
+
+	-- text
+	love.graphics.setFont(opt.font)
+    if input.text == '' and opt.placeholder then
+        love.graphics.setColor((opt.placeholder and opt.placeholder.color) or theme.input.placeholder.color)
+        love.graphics.print(opt.placeholder.text or '', x, y+(h-th)/2)
+    else
+        love.graphics.setColor((opt.color and opt.color.normal and opt.color.normal.fg) or theme.color.normal.fg)
+        love.graphics.print(input.text, x, y+(h-th)/2)
+    end
+
+	-- candidate text
+	local tw = opt.font:getWidth(input.text)
+	local ctw = opt.font:getWidth(input.candidate_text.text)
+	love.graphics.setColor((opt.color and opt.color.normal and opt.color.normal.fg) or theme.color.normal.fg)
+	love.graphics.print(input.candidate_text.text, x + tw, y+(h-th)/2)
+	
+	-- candidate text rectangle box
+	love.graphics.rectangle("line", x + tw, y+(h-th)/2, ctw, th)
+
+	-- cursor
+	if opt.hasKeyboardFocus and (love.timer.getTime() % 1) > .5 then
+		local ct = input.candidate_text;
+		local ss = ct.text:sub(1, utf8.offset(ct.text, ct.start))
+		local ws = opt.font:getWidth(ss)
+		if ct.start == 0 then ws = 0 end
+
+		love.graphics.setLineWidth(1)
+		love.graphics.setLineStyle('rough')
+		love.graphics.line(x + opt.cursor_pos + ws, y + (h-th)/2,
+		                   x + opt.cursor_pos + ws, y + (h+th)/2)
+	end
+
+	-- reset scissor
+	love.graphics.setScissor(sx,sy,sw,sh)
 end
 
 local gui = {}
