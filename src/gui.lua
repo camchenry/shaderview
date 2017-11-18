@@ -7,6 +7,8 @@ theme.textShadow = {
     x = 1,
     y = 1
 }
+theme.text_padding_x = 4
+theme.text_padding_y = 2
 theme.color = {
     normal = {
         bg = {66, 66, 66},
@@ -88,6 +90,8 @@ function theme.Button(text, opt, x,y,w,h)
         love.graphics.pop()
     end
 
+    local padx = opt.text_padding_x or theme.text_padding_x
+    local pady = opt.text_padding_x or theme.text_padding_y
     y = y + theme.getVerticalOffsetForAlign(opt.valign, opt.font, h)
 
     local shadow = (opt.color and opt.color.normal or {}).shadow or theme.color.normal.shadow
@@ -99,12 +103,11 @@ function theme.Button(text, opt, x,y,w,h)
     end
     love.graphics.setColor(r, g, b, a)
     love.graphics.setFont(opt.font)
-    local inner_padding_x = opt.padding_x or 4
-    love.graphics.printf(text, x+inner_padding_x+shadowX, y+shadowY, w - inner_padding_x*2, opt.align or "center")
+    love.graphics.printf(text, x+padx+shadowX, y+shadowY, w - padx*2, opt.align or "center")
 
     love.graphics.setColor(c.fg)
     love.graphics.setFont(opt.font)
-    love.graphics.printf(text, x+inner_padding_x, y, w - inner_padding_x*2, opt.align or "center")
+    love.graphics.printf(text, x+padx, y, w - padx*2, opt.align or "center")
 end
 
 local gui = {}
@@ -187,7 +190,7 @@ function gui.Instance:update(dt)
     for i, tab in ipairs(tabs) do
         local opt = {
             align = 'left',
-            padding_x = 10,
+            text_padding_x = 10,
             border = {
                 left = {
                     color = {255, 255, 255, 64},
