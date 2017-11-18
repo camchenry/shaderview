@@ -57,7 +57,7 @@ function splash:update(dt)
 
     for i, project in ipairs(self.project_list) do
         love.graphics.setFont(Fonts.regular[18])
-        if suit:Button(project, {align = 'left', cornerRadius = 6, text_padding_x = 6}, suit.layout:row(row_width, row_height*1.5)).hit then
+        if suit:Button(project, {align = 'left', cornerRadius = 4, text_padding_x = 6}, suit.layout:row(row_width, row_height*1.5)).hit then
             self.selected_project = project
             self.switch_to_game = true
         end

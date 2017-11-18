@@ -9,6 +9,18 @@ theme.textShadow = {
 }
 theme.text_padding_x = 4
 theme.text_padding_y = 2
+theme.button = {
+    border = {
+        bottom = {
+            color = {0, 0, 0, 128},
+            width = 2,
+        },
+        top = {
+            color = {255, 255, 255, 64},
+            width = 1,
+        },
+    }
+}
 theme.color = {
     normal = {
         bg = {66, 66, 66},
@@ -52,11 +64,14 @@ end
 function theme.Button(text, opt, x,y,w,h)
     local c = theme.getColorForState(opt)
 
-    x = math.floor(x + 0.5)
-    y = math.floor(y + 0.5)
+    local cornerRadius = opt.cornerRadius or theme.cornerRadius
+    theme.drawBox(x,y,w,h, c, cornerRadius)
 
-    theme.drawBox(x,y,w,h, c, opt.cornerRadius)
+    if not opt.border then
+        opt.border = theme.button.border
+    end
 
+    -- @TODO: Make these a call to rectangle using rounded rectangles?
     if opt.border then
         love.graphics.push()
         if opt.border.right then
@@ -64,28 +79,28 @@ function theme.Button(text, opt, x,y,w,h)
             local width = opt.border.right.width or 1
             love.graphics.setLineWidth(width)
             love.graphics.setLineStyle(opt.border.right.style or 'rough')
-            love.graphics.line(x + w, y, x + w, y + h)
+            love.graphics.line(x + w, y + cornerRadius/2, x + w, y + h - cornerRadius/2)
         end
         if opt.border.left then
             love.graphics.setColor(opt.border.left.color or {})
             local width = opt.border.left.width or 1
             love.graphics.setLineWidth(width)
             love.graphics.setLineStyle(opt.border.left.style or 'rough')
-            love.graphics.line(x + width, y, x + width/2, y + h)
+            love.graphics.line(x + width, y + cornerRadius/2, x + width/2, y + h - cornerRadius/2)
         end
         if opt.border.bottom then
             love.graphics.setColor(opt.border.bottom.color or {})
             local width = opt.border.bottom.width or 1
             love.graphics.setLineWidth(width)
             love.graphics.setLineStyle(opt.border.bottom.style or 'rough')
-            love.graphics.line(x, y + h - width / 2, x + w, y + h - width / 2)
+            love.graphics.line(x + cornerRadius/2, y + h - width / 2, x + w - cornerRadius/2, y + h - width / 2)
         end
         if opt.border.top then
             love.graphics.setColor(opt.border.top.color or {})
             local width = opt.border.top.width or 1
             love.graphics.setLineWidth(width)
             love.graphics.setLineStyle(opt.border.top.style or 'rough')
-            love.graphics.line(x, y + width / 2, x + w, y + width / 2)
+            love.graphics.line(x + cornerRadius/2, y + width / 2, x + w - cornerRadius/2, y + width / 2)
         end
         love.graphics.pop()
     end
