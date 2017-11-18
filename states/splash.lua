@@ -47,7 +47,7 @@ function splash:update(dt)
     local padding_x = 10
     local padding_y = 10
     local row_width = love.graphics.getWidth() * 0.3
-    local row_height = love.graphics.getHeight() * 0.04
+    local row_height = love.graphics.getHeight() * 0.035
 
     suit.layout:reset(x, y, padding_x, padding_y)
 
@@ -77,10 +77,23 @@ function splash:update(dt)
     }
     suit:Input(self.new_project_name_state, opt, suit.layout:row())
     if self.new_project_name_state.text ~= '' then
-        if suit:Button('Create project', {align = 'center', cornerRadius = 6}, suit.layout:row()).hit then
-            self:create_new_project(self.new_project_name_state.text)
-            self.project_list = love.filesystem.getDirectoryItems('save/projects')
-            self.new_project_name_state.text = ''
+        local project_exists = love.filesystem.exists('save/projects/' .. self.new_project_name_state.text)
+        if project_exists then
+            local opt = {
+                align = 'left',
+                color = {
+                    normal = {
+                        fg = {225, 66, 66}
+                    }
+                }
+            }
+            suit:Label('Project exists already', opt, suit.layout:row())
+        else
+            if suit:Button('Create project', {align = 'center', cornerRadius = 6}, suit.layout:row()).hit then
+                self:create_new_project(self.new_project_name_state.text)
+                self.project_list = love.filesystem.getDirectoryItems('save/projects')
+                self.new_project_name_state.text = ''
+            end
         end
     end
     suit.layout:pop()
