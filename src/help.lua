@@ -91,7 +91,7 @@ help.Panel = Class{
             y = y + 50
 
             love.graphics.setFont(Fonts.bold[20])
-            print_with_shadow('Press ' .. string.upper(self.visible_toggle_key) .. ' to close this menu', x, y)
+            print_with_shadow('Press ' .. string.upper(self.visible_toggle_key) .. ' to toggle this menu', x, y)
 
             love.graphics.pop()
         end

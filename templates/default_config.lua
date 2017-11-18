@@ -1,12 +1,13 @@
 -- This is the default configuration file
 -- Modifications should go in user.lua
 return {
-    show_help_on_start = true,
+    -- Show help screen on start
+    show_help_on_start = false,
 
     -- Shader reloaded
     notification_reload_shader = true,
 
-    -- Shader reloaded
+    -- Texture reloaded
     notification_reload_texture = true,
 
     -- App reloaded

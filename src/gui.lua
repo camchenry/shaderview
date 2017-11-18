@@ -252,6 +252,10 @@ function gui.Instance:update(dt)
             id = 'textures',
             label = 'Textures',
         },
+        {
+            id = 'help',
+            label = 'Help',
+        },
     }
 
     suit.layout:push(self.main_layout:cell(1))
@@ -307,6 +311,8 @@ function gui.Instance:update(dt)
         self:draw_performance()
     elseif self.current_tab == 'textures' then
         self:draw_textures()
+    elseif self.current_tab == 'help' then
+        self:draw_help()
     end
 end
 
@@ -498,6 +504,40 @@ function gui.Instance:draw_performance()
         local text = info[i]
         suit:Label(text, {align = 'left'}, suit.layout:row(row_width, row_height))
     end
+    suit.layout:pop()
+end
+
+function gui.Instance:draw_help()
+    local x = self.x
+    local y = self.y
+    local padding_x = self.padding_x
+    local padding_y = self.padding_y
+    local row_width = self.row_width
+    local row_height = self.row_height
+
+    local stats = love.graphics.getStats()
+    local unit = "MB"
+    local ram = collectgarbage("count") / 1024
+    local vram = stats.texturememory / 1024 / 1024
+
+    love.graphics.setFont(Fonts.regular[16])
+
+    local x, y = self.main_layout.cell(2)
+    self.tab_layout = suit.layout:cols{
+        pos = {x + 5, y + 5},
+        padding = {padding_x, padding_y},
+        min_width = self.width,
+        min_height = self.height,
+
+        {self.width, self.height}
+    }
+
+    suit.layout:push(self.tab_layout.cell(1))
+
+    if suit:Button('Open help menu', {align = 'left'}, suit.layout:row(200, 30)).hit then
+        States.game.help_panel.visible = true
+    end
+
     suit.layout:pop()
 end
 
