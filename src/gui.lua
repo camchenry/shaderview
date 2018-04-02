@@ -12,11 +12,11 @@ theme.text_padding_y = 2
 theme.button = {
     border = {
         bottom = {
-            color = {0, 0, 0, 128},
+            color = {0, 0, 0, 0.5},
             width = 2,
         },
         top = {
-            color = {255, 255, 255, 64},
+            color = {1, 1, 1, .25},
             width = 1,
         },
     }
@@ -24,24 +24,24 @@ theme.button = {
 theme.input = {
     placeholder = {
         text = '',
-        color = {255, 255, 255, 100},
+        color = {1, 1, 1, .392},
     }
 }
 theme.color = {
     normal = {
-        bg = {66, 66, 66},
-        fg = {225,225,225},
-        shadow = {33, 33, 33},
+        bg = {.259, .259, .259},
+        fg = {.882, .882, .882},
+        shadow = {.13, .13, .13},
     },
     hovered = {
-        bg = {88, 88, 88},
-        fg = {255,255,255},
-        shadow = {33, 33, 33},
+        bg = {.345, .345, .345},
+        fg = {1, 1, 1},
+        shadow = {.13, .13, .13},
     },
     active = {
-        bg = {44, 44, 44},
-        fg = {255,255,255},
-        shadow = {33, 33, 33},
+        bg = {.173, .173, .173},
+        fg = {1, 1, 1},
+        shadow = {.13, .13, .13},
     }
 }
 function theme.Label(text, opt, x,y,w,h)
@@ -52,7 +52,7 @@ function theme.Label(text, opt, x,y,w,h)
     local shadowY = (opt.textShadow or {}).y or theme.textShadow.y
     local r, g, b, a = unpack(color)
     if a == nil then
-        a = 255
+        a = 1
     end
     love.graphics.setColor(r, g, b, a)
     love.graphics.setFont(opt.font)
@@ -61,7 +61,7 @@ function theme.Label(text, opt, x,y,w,h)
     local color = (opt.color and opt.color.normal or {}).fg or theme.color.normal.fg
     local r, g, b, a = unpack(color)
     if a == nil then
-        a = 255
+        a = 1
     end
     love.graphics.setColor(r, g, b, a)
     love.graphics.setFont(opt.font)
@@ -120,7 +120,7 @@ function theme.Button(text, opt, x,y,w,h)
     local shadowY = (opt.textShadow or {}).y or theme.textShadow.y
     local r, g, b, a = unpack(shadow)
     if a == nil then
-        a = 255
+        a = 1
     end
     love.graphics.setColor(r, g, b, a)
     love.graphics.setFont(opt.font)
@@ -266,19 +266,19 @@ function gui.Instance:update(dt)
             text_padding_x = 10,
             border = {
                 left = {
-                    color = {255, 255, 255, 64},
+                    color = {1, 1, 1, .25},
                     width = 1,
                 },
                 right = {
-                    color = {0, 0, 0, 96},
+                    color = {0, 0, 0, .376},
                     width = 1,
                 },
                 bottom = {
-                    color = {0, 0, 0, 128},
+                    color = {0, 0, 0, .5},
                     width = 2,
                 },
                 top = {
-                    color = {255, 255, 255, 64},
+                    color = {1, 1, 1, .25},
                     width = 1,
                 },
             }
@@ -324,20 +324,20 @@ function gui.Instance:draw()
     local y = self.y - padding_y
     local w = cell_width + padding_x * 2
     local h = cell_height + padding_y * 2
-    love.graphics.setColor(0, 0, 0, 128)
+    love.graphics.setColor(0, 0, 0, 0.5)
     love.graphics.rectangle('fill', x, y, w, h)
 
     local x = x
     local y = y
     local w = self.width          + self.padding_x * 2
     local h = self.top_row_height + self.padding_y * 2
-    love.graphics.setColor(0, 0, 0, 180)
+    love.graphics.setColor(0, 0, 0, .7)
     love.graphics.rectangle('fill', x, y, w, h)
     suit:draw()
 
     for i, data in ipairs(self.textures_to_draw) do
         love.graphics.push()
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.setColor(1, 1, 1)
         love.graphics.draw(data.texture, data.x, data.y, data.rotation, data.scale_x, data.scale_y)
         love.graphics.pop()
     end

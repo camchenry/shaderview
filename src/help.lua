@@ -6,7 +6,7 @@ local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
     love.graphics.setColor(0, 0, 0)
     love.graphics.print(text, x + shadow_size, y + shadow_size, sx, sy, ox, oy, skx, sky)
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.print(text, x, y, sx, sy, ox, oy, skx, sky)
 end
 
@@ -16,7 +16,7 @@ local function printf_with_shadow(text, x, y, width, align, ...)
     love.graphics.setColor(0, 0, 0)
     love.graphics.printf(text, x + shadow_size, y + shadow_size, width, align)
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.printf(text, x, y, width, align)
 end
 
@@ -54,13 +54,13 @@ help.Panel = Class{
     draw = function(self)
         if self.visible then
             love.graphics.push()
-            love.graphics.setColor(0, 0, 0, 160)
+            love.graphics.setColor(0, 0, 0, .63)
             local x = (love.graphics.getWidth() - self.width)/2
             local y = (love.graphics.getHeight() - self.height)/2
             love.graphics.rectangle('fill', x, y, self.width, self.height)
 
             love.graphics.translate(self.padding, self.padding)
-            love.graphics.setColor(255, 255, 255)
+            love.graphics.setColor(1, 1, 1)
 
             local title_text = 'Shaderview'
             local title_font = Fonts.bold[40]

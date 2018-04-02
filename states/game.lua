@@ -19,9 +19,9 @@ local error_region = "main"
 local error_clear_error = true
 local error_overlay = {
     opacity = 0,
-    foreground = {255, 255, 255, 255},
-    shadow = {0, 0, 0, 255},
-    background = {0, 0, 0, 160},
+    foreground = {1, 1, 1, 1},
+    shadow = {0, 0, 0, 1},
+    background = {0, 0, 0, .63},
 }
 local errors = {}
 local channel_filechange = love.thread.getChannel("channel_filechange")

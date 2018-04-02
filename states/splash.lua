@@ -8,7 +8,7 @@ local function print_with_shadow(text, x, y, r, sx, sy, ox, oy, skx, sky)
     love.graphics.setColor(0, 0, 0)
     love.graphics.print(text, x + shadow_size, y + shadow_size, sx, sy, ox, oy, skx, sky)
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.print(text, x, y, sx, sy, ox, oy, skx, sky)
 end
 
@@ -18,7 +18,7 @@ local function printf_with_shadow(text, x, y, width, align, ...)
     love.graphics.setColor(0, 0, 0)
     love.graphics.printf(text, x + shadow_size, y + shadow_size, width, align)
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.printf(text, x, y, width, align)
 end
 
@@ -100,7 +100,7 @@ function splash:update(dt)
 end
 
 function splash:draw()
-    love.graphics.setBackgroundColor(22, 22, 22)
+    love.graphics.setBackgroundColor(.09, .09, .09)
 
     local x, y = 70, 70
     local title_text = 'Shaderview'
@@ -115,7 +115,7 @@ function splash:draw()
     love.graphics.setFont(version_font)
     print_with_shadow(Shaderview.version, version_x, version_y)
 
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     suit:draw()
 end
 
