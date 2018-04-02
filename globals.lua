@@ -123,10 +123,11 @@ local function basename(str)
 end
 
 function copy_directory(source, dest, dir_name, depth)
+    local source_info = love.filesystem.getInfo(source)
     if not depth then
         depth = 1
     end
-    if not love.filesystem.isDirectory(source) then
+    if not source_info then
         error("Source folder '" .. source .. "' does not exist.")
     end
     local files = love.filesystem.getDirectoryItems(source)
@@ -142,14 +143,16 @@ function copy_directory(source, dest, dir_name, depth)
     dest = dest .. '/'
     source = source .. '/'
 
-    if not love.filesystem.exists(dest) then
+    local info = love.filesystem.getInfo(dest, 'directory')
+    if not info then
         love.filesystem.createDirectory(dest)
     end
 
     for _, file in ipairs(files) do
-        if love.filesystem.isDirectory(source .. file) then
+        local info = love.filesystem.getInfo(source .. file)
+        if info.type == "directory" then
             copy_directory(source .. file, dest .. file, nil, depth + 1)
-        elseif love.filesystem.isFile(source .. file) then
+        elseif info.type == "file" then
             love.filesystem.write(dest .. file, love.filesystem.read(source .. file))
         end
     end

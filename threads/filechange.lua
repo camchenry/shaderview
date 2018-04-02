@@ -28,8 +28,9 @@ local function config_load(config)
 end
 
 local function update_file_info(filepath)
-    if love.filesystem.exists(filepath) then
-        last_modified[filepath] = love.filesystem.getLastModified(filepath)
+    local info = love.filesystem.getInfo(filepath, 'file')
+    if info then
+        last_modified[filepath] = info.modtime
         hashes[filepath] = xxhash(love.filesystem.read(filepath))
     end
 end
@@ -37,16 +38,15 @@ end
 local function check_file_modified()
     -- Scan for file changes
     for i, filepath in ipairs(files) do
-        if love.filesystem.exists(filepath) then
+        local info = love.filesystem.getInfo(filepath, 'file')
+        if info then
             local changed = false
 
-            local lastmod = love.filesystem.getLastModified(filepath)
-
             if not last_modified[filepath] then
-                last_modified[filepath] = lastmod
+                last_modified[filepath] = info.modtime
             end
 
-            if lastmod and lastmod > last_modified[filepath] then
+            if info.modtime and info.modtime > last_modified[filepath] then
                 changed = true
             end
 
@@ -61,7 +61,8 @@ end
 local function check_file_hashes()
     -- Scan for file changes
     for i, filepath in ipairs(files) do
-        if love.filesystem.exists(filepath) then
+        local info = love.filesystem.getInfo(filepath, 'file')
+        if info then
             local changed = false
             local contents, bytes = love.filesystem.read(filepath)
             local hash = xxhash(contents)

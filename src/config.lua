@@ -17,7 +17,8 @@ function config:mixin(t)
 end
 
 function config:load(file)
-    if not love.filesystem.exists(file) then
+    local info = love.filesystem.getInfo(file, 'file')
+    if not info then
         error('Config file "' .. file .. '" does not exist!')
     end
     self:mixin(love.filesystem.load(file)())

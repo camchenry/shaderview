@@ -77,7 +77,7 @@ function splash:update(dt)
     }
     suit:Input(self.new_project_name_state, opt, suit.layout:row())
     if self.new_project_name_state.text ~= '' then
-        local project_exists = love.filesystem.exists('save/projects/' .. self.new_project_name_state.text)
+        local project_exists = love.filesystem.getInfo('save/projects/' .. self.new_project_name_state.text, 'directory')
         if project_exists then
             local opt = {
                 align = 'left',

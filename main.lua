@@ -10,20 +10,20 @@ function love.load()
     }
 
     for _, path in ipairs(save_paths) do
-        if not love.filesystem.exists(path) then
+        if not love.filesystem.getInfo(path, 'directory') then
             love.filesystem.createDirectory(path)
         end
     end
 
-    if not love.filesystem.exists('save/config/user.lua') then
+    if not love.filesystem.getInfo('save/config/user.lua', 'file') then
         love.filesystem.write('save/config/user.lua', love.filesystem.read('templates/user_config.lua'))
     end
 
-    if not love.filesystem.exists('save/config/default.lua') then
+    if not love.filesystem.getInfo('save/config/default.lua', 'file') then
         love.filesystem.write('save/config/default.lua', love.filesystem.read('templates/default_config.lua'))
     end
 
-    if not love.filesystem.exists('save/projects/demo') then
+    if not love.filesystem.getInfo('save/projects/demo', 'file') then
         copy_directory('templates/demo', 'save/projects')
     end
 
