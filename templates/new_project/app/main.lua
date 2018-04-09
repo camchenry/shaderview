@@ -17,7 +17,7 @@ function app:draw()
     love.graphics.clear(love.graphics.getBackgroundColor())
     love.graphics.setBlendMode("alpha", "premultiplied")
     love.graphics.setShader(shaders.default)
-    love.graphics.setColor(255, 255, 255)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.rectangle('fill', 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
     love.graphics.setShader()
 end
