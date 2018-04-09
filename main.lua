@@ -23,7 +23,7 @@ function love.load()
         love.filesystem.write('save/config/default.lua', love.filesystem.read('templates/default_config.lua'))
     end
 
-    if not love.filesystem.getInfo('save/projects/demo', 'file') then
+    if not love.filesystem.getInfo('save/projects/demo', 'directory') then
         copy_directory('templates/demo', 'save/projects')
     end
 
